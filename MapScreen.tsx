@@ -1,31 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { View, Button, Alert } from "react-native";
+import React, { useContext } from "react";
+import { View, Button, Text } from "react-native";
 import MapView from "react-native-maps";
-import * as Location from "expo-location";
+import { LocationContext } from "./LocationContext"; // Add this import
 
-export const MapScreen = ({ navigation }: any) => {
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
+export const MapScreen = ({ navigation, route }: any) => {
+  const location = useContext(LocationContext); // Use useContext to get the location
 
-  const fetchLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission to access location was denied");
-      return;
-    }
-
-    let currentLocation = await Location.getCurrentPositionAsync({});
-    setLocation(currentLocation);
-  };
-
-  useEffect(() => {
-    fetchLocation();
-  }, []);
+  console.log(location); // Debugging line to check the value of location
 
   return (
     <View style={{ flex: 1 }}>
-      {location && (
+      {location ? (
         <MapView
           style={{ flex: 1 }}
           initialRegion={{
@@ -34,8 +19,10 @@ export const MapScreen = ({ navigation }: any) => {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
-          provider="google" // Remove this line to use Apple Maps on iOS
+          provider="google"
         />
+      ) : (
+        <Text>No location available</Text> // Display message when location is not available
       )}
       <Button
         title="Go to Profile"
