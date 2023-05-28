@@ -1,31 +1,38 @@
 import React, { useState, useEffect, useContext } from "react";
 import { View, StyleSheet } from "react-native";
-import Select from "react-select-country-list";
 import { useNavigation } from "@react-navigation/native";
-import { LocationContext } from "./LocationContext"; // Add this import
+import { LocationContext } from "./LocationContext";
+import CountryPicker from "react-native-country-picker-modal";
 
 const CountrySelectScreen = () => {
-  const location = useContext(LocationContext); // use useContext to get location
-
-  const [value, setValue] = useState(null);
-  const options = Select().getData();
+  const location = useContext(LocationContext);
+  const [countryCode, setCountryCode] = useState(null);
   const navigation = useNavigation();
 
-  // On initial render, log the location
   useEffect(() => {
     if (location) {
       console.log(location);
+      setCountryCode(location?.country);
     }
   }, [location]);
 
-  const onChange = (value) => {
-    setValue(value);
-    navigation.goBack(); // Go back to RegisterScreen after country selection
+  const onSelect = (country) => {
+    setCountryCode(country.cca2);
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
-      <Select options={options} value={value} onChange={onChange} />
+      <CountryPicker
+        countryCode={countryCode}
+        withFlag
+        withCountryNameButton
+        withCallingCodeButton
+        withAlphaFilter
+        withFilter // Enables the search bar
+        withEmoji
+        onSelect={onSelect}
+      />
     </View>
   );
 };
