@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { View, StyleSheet } from "react-native";
 import Select from "react-select-country-list";
 import { useNavigation } from "@react-navigation/native";
+import { LocationContext } from "./LocationContext"; // Add this import
 
-const CountrySelectScreen = ({ route }) => {
-  const { location } = route.params;
+const CountrySelectScreen = () => {
+  const location = useContext(LocationContext); // use useContext to get location
+
   const [value, setValue] = useState(null);
   const options = Select().getData();
   const navigation = useNavigation();
 
-  // On initial render, select the default country from location
+  // On initial render, log the location
   useEffect(() => {
     if (location) {
-      const defaultCountry = options.find(
-        (option) => option.label === location.country
-      );
-      setValue(defaultCountry);
+      console.log(location);
     }
   }, [location]);
 

@@ -16,7 +16,7 @@ export const LocationProvider = ({ children }) => {
       }
 
       let location = await Location.getCurrentPositionAsync({});
-      console.log(location);
+
       setLocation(location);
     })();
   }, []);
