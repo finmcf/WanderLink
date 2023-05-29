@@ -13,7 +13,8 @@ import { PinchGestureHandler, State } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
 
 export default function CameraScreen() {
-  const [hasPermission, setHasPermission] = useState(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0);
@@ -22,8 +23,13 @@ export default function CameraScreen() {
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestPermissionsAsync();
-      setHasPermission(status === "granted");
+      const cameraPermission = await Camera.requestCameraPermissionsAsync();
+      const microphonePermission =
+        await Camera.requestMicrophonePermissionsAsync();
+      setHasPermission(
+        cameraPermission.status === "granted" &&
+          microphonePermission.status === "granted"
+      );
     })();
   }, []);
 
