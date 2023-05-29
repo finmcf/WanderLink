@@ -14,12 +14,13 @@ import * as ImagePicker from "expo-image-picker";
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0);
   const [photoUri, setPhotoUri] = useState(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const cameraRef = useRef(null);
+  const [key, setKey] = useState(0); // New state
 
   useEffect(() => {
     (async () => {
@@ -32,6 +33,12 @@ export default function CameraScreen() {
       );
     })();
   }, []);
+
+  useEffect(() => {
+    if (!photoUri) {
+      setKey((prevKey) => prevKey + 1); // Force re-render of Camera
+    }
+  }, [photoUri]);
 
   const onPinchEvent = (event) => {
     setZoom(event.nativeEvent.scale / 10);
@@ -79,18 +86,23 @@ export default function CameraScreen() {
       onHandlerStateChange={onPinchStateChange}
     >
       <Camera
+        key={key} // Use the key prop here
         style={{ flex: 1 }}
         type={cameraType}
         flashMode={flashMode}
         zoom={zoom}
         ref={cameraRef}
+        onCameraReady={() => setIsCameraReady(true)}
       >
         {photoUri && (
           <View style={styles.takenPictureContainer}>
             <Image source={{ uri: photoUri }} style={styles.takenPicture} />
             <TouchableOpacity
               style={styles.deleteButton}
-              onPress={() => setPhotoUri(null)}
+              onPress={() => {
+                setPhotoUri(null);
+                setIsCameraReady(false);
+              }}
             >
               <Ionicons name="close-circle" size={36} color="white" />
             </TouchableOpacity>
@@ -129,7 +141,7 @@ export default function CameraScreen() {
               <TouchableOpacity
                 style={styles.takePictureButton}
                 onPress={async () => {
-                  if (cameraRef.current) {
+                  if (cameraRef.current && isCameraReady) {
                     const photo = await cameraRef.current.takePictureAsync();
                     setPhotoUri(photo.uri);
                   }
