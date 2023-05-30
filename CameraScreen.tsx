@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import { Camera } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { PinchGestureHandler, State } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
+import { LocationContext } from "./LocationContext";
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -20,7 +21,8 @@ export default function CameraScreen() {
   const [photoUri, setPhotoUri] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const cameraRef = useRef(null);
-  const [key, setKey] = useState(0); // New state
+  const [key, setKey] = useState(0);
+  const location = useContext(LocationContext);
 
   useEffect(() => {
     (async () => {
@@ -36,7 +38,7 @@ export default function CameraScreen() {
 
   useEffect(() => {
     if (!photoUri) {
-      setKey((prevKey) => prevKey + 1); // Force re-render of Camera
+      setKey((prevKey) => prevKey + 1);
     }
   }, [photoUri]);
 
@@ -69,7 +71,7 @@ export default function CameraScreen() {
     console.log(result);
 
     if (!result.cancelled) {
-      // Here you can handle the selected image as you want
+      // Handle the selected image
     }
   };
 
@@ -80,13 +82,21 @@ export default function CameraScreen() {
     return <Text>No access to camera</Text>;
   }
 
+  const takePicture = async () => {
+    if (cameraRef.current && isCameraReady) {
+      const photo = await cameraRef.current.takePictureAsync();
+      setPhotoUri(photo.uri);
+      console.log(location); // Log the location when a picture is taken
+    }
+  };
+
   return (
     <PinchGestureHandler
       onGestureEvent={onPinchEvent}
       onHandlerStateChange={onPinchStateChange}
     >
       <Camera
-        key={key} // Use the key prop here
+        key={key}
         style={{ flex: 1 }}
         type={cameraType}
         flashMode={flashMode}
@@ -140,12 +150,7 @@ export default function CameraScreen() {
             <View style={styles.bottomButtonContainer}>
               <TouchableOpacity
                 style={styles.takePictureButton}
-                onPress={async () => {
-                  if (cameraRef.current && isCameraReady) {
-                    const photo = await cameraRef.current.takePictureAsync();
-                    setPhotoUri(photo.uri);
-                  }
-                }}
+                onPress={takePicture}
               >
                 <View style={styles.innerCircle} />
               </TouchableOpacity>
