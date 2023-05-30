@@ -1,12 +1,19 @@
 import React, { createContext, useState, useEffect } from "react";
 import * as Location from "expo-location";
+import { auth } from "./firebaseConfig";
 
-export const LocationContext = createContext(null);
+interface ContextProps {
+  location: Location.LocationObject | null;
+  user: firebase.User | null;
+}
 
-export const LocationProvider = ({ children }) => {
+export const AppContext = createContext<Partial<ContextProps>>({});
+
+export const AppProvider = ({ children }) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const [user, setUser] = useState<firebase.User | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -16,14 +23,20 @@ export const LocationProvider = ({ children }) => {
       }
 
       let location = await Location.getCurrentPositionAsync({});
-
       setLocation(location);
     })();
+
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   return (
-    <LocationContext.Provider value={location}>
+    <AppContext.Provider value={{ location, user }}>
       {children}
-    </LocationContext.Provider>
+    </AppContext.Provider>
   );
 };

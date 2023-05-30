@@ -11,7 +11,7 @@ import { Camera } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import { PinchGestureHandler, State } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
-import { LocationContext } from "./LocationContext";
+import { AppContext } from "./AppContext";
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -22,7 +22,8 @@ export default function CameraScreen() {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const cameraRef = useRef(null);
   const [key, setKey] = useState(0);
-  const location = useContext(LocationContext);
+
+  const { location, user } = useContext(AppContext);
 
   useEffect(() => {
     (async () => {

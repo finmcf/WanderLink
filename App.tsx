@@ -15,7 +15,7 @@ import SocialScreen from "./SocialScreen";
 import SearchScreen from "./SearchScreen";
 import { MapScreen } from "./MapScreen";
 import CountrySelectScreen from "./CountrySelectScreen";
-import { LocationProvider } from "./LocationContext"; // Add this import
+import { AppProvider } from "./AppContext"; // Update this import
 
 const Stack = createStackNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -70,7 +70,7 @@ const MainTabScreen = () => (
 
 export default function App() {
   return (
-    <LocationProvider>
+    <AppProvider>
       <NavigationContainer>
         <Stack.Navigator
           initialRouteName="Login"
@@ -83,6 +83,6 @@ export default function App() {
           <Stack.Screen name="SearchScreen" component={SearchScreen} />
         </Stack.Navigator>
       </NavigationContainer>
-    </LocationProvider>
+    </AppProvider>
   );
 }

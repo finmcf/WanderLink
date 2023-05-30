@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
 import { View, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { LocationContext } from "./LocationContext";
+import { AppContext } from "./AppContext"; // Use AppContext instead of LocationContext
 import CountryPicker from "react-native-country-picker-modal";
 
 const CountrySelectScreen = () => {
-  const location = useContext(LocationContext);
+  const { location } = useContext(AppContext); // Extract location from AppContext
   const [countryCode, setCountryCode] = useState(null);
   const navigation = useNavigation();
 

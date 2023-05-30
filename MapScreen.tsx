@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import { View, Button, Text } from "react-native";
 import MapView from "react-native-maps";
-import { LocationContext } from "./LocationContext"; // Add this import
+import { AppContext } from "./AppContext"; // Import AppContext
 
 export const MapScreen = ({ navigation, route }: any) => {
-  const location = useContext(LocationContext); // Use useContext to get the location
+  const { location } = useContext(AppContext); // Extract location from AppContext
 
   console.log(location); // Debugging line to check the value of location
 
