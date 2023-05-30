@@ -57,13 +57,22 @@ const RegisterScreen = ({ navigation }) => {
         password
       );
       await setDoc(doc(db, "Users", userCredential.user.uid), {
-        username: username,
-        country: country,
-        dateOfBirth: dateOfBirth.toISOString(),
-        email: email,
-        userId: userCredential.user.uid,
-        friends: [],
-        profilePicture: defaultProfilePictureURL,
+        userInformation: {
+          username: username,
+          country: country,
+          dateOfBirth: dateOfBirth.toISOString(),
+          email: email,
+          userId: userCredential.user.uid,
+          profilePicture: defaultProfilePictureURL,
+        },
+        friends: {
+          // Friends and messaging data will go here
+          // You'll likely want to use a more complex structure in a real app
+        },
+        userMedia: {
+          // Here you can store user's media data
+          // Again, in a real app, you'll likely need to use arrays or subcollections
+        },
       });
       navigation.navigate("Main", { screen: "Profile" });
     } catch (error) {
