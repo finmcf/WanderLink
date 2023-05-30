@@ -24,6 +24,12 @@ const RegisterScreen = ({ navigation }) => {
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  const strongPasswordCheck = (password) => {
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    return regex.test(password);
+  };
+
   // Function to open the country selector
   const openCountrySelector = () => {
     navigation.navigate("CountrySelect");
@@ -34,7 +40,16 @@ const RegisterScreen = ({ navigation }) => {
       Alert.alert("Error", "Passwords do not match!");
       return;
     }
-    // Add a strong password check logic here if needed
+
+    // Strong password check
+    if (!strongPasswordCheck(password)) {
+      Alert.alert(
+        "Error",
+        "Password must have at least 6 characters, at least one uppercase letter, one lowercase letter, one number and one special character."
+      );
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
