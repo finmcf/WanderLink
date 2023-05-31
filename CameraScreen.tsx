@@ -12,6 +12,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { PinchGestureHandler, State } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
 import { AppContext } from "./AppContext";
+import { storage } from "./firebaseConfig";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { db } from "./firebaseConfig";
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -76,6 +80,48 @@ export default function CameraScreen() {
     }
   };
 
+  const uploadImage = async (uri) => {
+    const storageRef = ref(storage, `userMedia/${user.uid}/${Date.now()}.jpg`);
+
+    const response = await fetch(uri);
+    const blob = await response.blob();
+
+    const uploadTask = uploadBytesResumable(storageRef, blob);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+      },
+      (error) => {
+        console.error("Error uploading image: ", error);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log("File available at", downloadURL);
+
+          const docRef = doc(db, "Users", user.uid);
+
+          const timestamp = Date.now();
+          const { latitude, longitude } = location.coords;
+
+          updateDoc(docRef, {
+            userMedia: arrayUnion({
+              imageUrl: downloadURL,
+              timestamp,
+              location: {
+                latitude,
+                longitude,
+              },
+            }),
+          });
+        });
+      }
+    );
+  };
+
   if (hasPermission === null) {
     return <View />;
   }
@@ -87,7 +133,7 @@ export default function CameraScreen() {
     if (cameraRef.current && isCameraReady) {
       const photo = await cameraRef.current.takePictureAsync();
       setPhotoUri(photo.uri);
-      console.log(location); // Log the location when a picture is taken
+      console.log(location);
     }
   };
 
@@ -117,9 +163,14 @@ export default function CameraScreen() {
             >
               <Ionicons name="close-circle" size={36} color="white" />
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={() => uploadImage(photoUri)}
+            >
+              <Ionicons name="cloud-upload" size={36} color="white" />
+            </TouchableOpacity>
           </View>
         )}
-
         {!photoUri && (
           <>
             <View style={styles.topButtonContainer}>
@@ -189,6 +240,14 @@ const styles = StyleSheet.create({
   deleteButton: {
     position: "absolute",
     top: 40,
+    right: 20,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20,
+    padding: 10,
+  },
+  uploadButton: {
+    position: "absolute",
+    bottom: 20,
     right: 20,
     backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 20,
