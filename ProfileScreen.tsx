@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Image,
@@ -9,23 +9,40 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { AppContext } from "./AppContext";
+import { listAll, ref, getDownloadURL } from "firebase/storage";
+import { storage } from "./firebaseConfig";
 
-// Fake data for demonstration
-const posts = Array(20)
-  .fill()
-  .map((_, i) => ({ id: i, image: "https://via.placeholder.com/150" }));
-const followers = 1500;
-const following = 500;
-const bio = "This is a bio!";
-
-// Get screen width
 const windowWidth = Dimensions.get("window").width;
-const imageSize = windowWidth / 2; // divide by number of columns
+const imageSize = windowWidth / 2;
 
 export const ProfileScreen = ({ navigation }) => {
+  const { user, userData } = useContext(AppContext);
+  const [userImages, setUserImages] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      const listRef = ref(storage, `userMedia/${user.uid}`);
+      listAll(listRef)
+        .then((res) => {
+          res.items.forEach((itemRef) => {
+            getDownloadURL(itemRef)
+              .then((url) => {
+                console.log("Image URL: ", url);
+                setUserImages((prev) => [...prev, url]);
+              })
+              .catch((error) => console.log(error));
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }, [user]);
+
   const renderItem = ({ item }) => (
     <View>
-      <Image source={{ uri: item.image }} style={styles.postImage} />
+      <Image source={{ uri: item }} style={styles.postImage} />
     </View>
   );
 
@@ -34,15 +51,27 @@ export const ProfileScreen = ({ navigation }) => {
       <View style={styles.profileHeader}>
         <Image
           style={styles.profilePic}
-          source={{ uri: "https://via.placeholder.com/150" }} // replace with profile picture URI
+          source={{
+            uri: userData
+              ? userData.profilePicUrl
+              : "https://via.placeholder.com/150",
+          }}
         />
         <View style={styles.profileDetails}>
-          <Text style={styles.username}>Username</Text>
+          <Text style={styles.username}>
+            {userData ? userData.username : "Username"}
+          </Text>
           <View style={styles.followContainer}>
-            <Text style={styles.followCount}>{followers} Followers</Text>
-            <Text style={styles.followCount}>{following} Following</Text>
+            <Text style={styles.followCount}>
+              {userData ? userData.followers : 0} Followers
+            </Text>
+            <Text style={styles.followCount}>
+              {userData ? userData.following : 0} Following
+            </Text>
           </View>
-          <Text style={styles.bio}>{bio}</Text>
+          <Text style={styles.bio}>
+            {userData ? userData.bio : "This is a bio!"}
+          </Text>
         </View>
         <Ionicons
           name="settings-outline"
@@ -52,9 +81,9 @@ export const ProfileScreen = ({ navigation }) => {
         />
       </View>
       <FlatList
-        data={posts}
+        data={userImages}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => index.toString()}
         numColumns={2}
       />
       <Button title="Log out" onPress={() => navigation.navigate("Login")} />

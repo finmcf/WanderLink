@@ -29,6 +29,9 @@ export default function CameraScreen() {
 
   const { location, user } = useContext(AppContext);
 
+  console.log("User Context: ", user);
+  console.log("Location Context: ", location);
+
   useEffect(() => {
     (async () => {
       const cameraPermission = await Camera.requestCameraPermissionsAsync();
@@ -73,7 +76,7 @@ export default function CameraScreen() {
       quality: 1,
     });
 
-    console.log(result);
+    console.log("Image Picker Result: ", result);
 
     if (!result.cancelled) {
       // Handle the selected image
@@ -81,6 +84,7 @@ export default function CameraScreen() {
   };
 
   const uploadImage = async (uri) => {
+    console.log("Upload started for URI: ", uri);
     const storageRef = ref(storage, `userMedia/${user.uid}/${Date.now()}.jpg`);
 
     const response = await fetch(uri);
@@ -99,33 +103,43 @@ export default function CameraScreen() {
         console.error("Error uploading image: ", error);
       },
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log("File available at", downloadURL);
+        getDownloadURL(uploadTask.snapshot.ref)
+          .then((downloadURL) => {
+            console.log("File available at", downloadURL);
 
-          const docRef = doc(db, "Users", user.uid);
+            const docRef = doc(db, "Users", user.uid);
 
-          const timestamp = Date.now();
-          const { latitude, longitude } = location.coords;
+            const timestamp = Date.now();
+            const { latitude, longitude } = location.coords;
 
-          updateDoc(docRef, {
-            userMedia: arrayUnion({
-              imageUrl: downloadURL,
-              timestamp,
-              location: {
-                latitude,
-                longitude,
-              },
-            }),
+            updateDoc(docRef, {
+              userMedia: arrayUnion({
+                imageUrl: downloadURL,
+                timestamp,
+                location: {
+                  latitude,
+                  longitude,
+                },
+              }),
+            })
+              .then(() => console.log("Document updated"))
+              .catch((error) => {
+                console.error("Error updating document: ", error);
+              });
+          })
+          .catch((error) => {
+            console.error("Error getting download URL: ", error);
           });
-        });
       }
     );
   };
 
   if (hasPermission === null) {
+    console.log("No response from permission request yet.");
     return <View />;
   }
   if (hasPermission === false) {
+    console.log("Camera permissions denied.");
     return <Text>No access to camera</Text>;
   }
 
@@ -133,7 +147,8 @@ export default function CameraScreen() {
     if (cameraRef.current && isCameraReady) {
       const photo = await cameraRef.current.takePictureAsync();
       setPhotoUri(photo.uri);
-      console.log(location);
+      console.log("Photo taken, URI: ", photo.uri);
+      console.log("Location during photo taken: ", location);
     }
   };
 
@@ -149,7 +164,10 @@ export default function CameraScreen() {
         flashMode={flashMode}
         zoom={zoom}
         ref={cameraRef}
-        onCameraReady={() => setIsCameraReady(true)}
+        onCameraReady={() => {
+          console.log("Camera is ready.");
+          setIsCameraReady(true);
+        }}
       >
         {photoUri && (
           <View style={styles.takenPictureContainer}>
@@ -157,6 +175,7 @@ export default function CameraScreen() {
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => {
+                console.log("Deleting picture.");
                 setPhotoUri(null);
                 setIsCameraReady(false);
               }}
@@ -165,7 +184,10 @@ export default function CameraScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.uploadButton}
-              onPress={() => uploadImage(photoUri)}
+              onPress={() => {
+                console.log("Uploading picture.");
+                uploadImage(photoUri);
+              }}
             >
               <Ionicons name="cloud-upload" size={36} color="white" />
             </TouchableOpacity>
@@ -177,6 +199,7 @@ export default function CameraScreen() {
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => {
+                  console.log("Switching camera.");
                   setCameraType(
                     cameraType === Camera.Constants.Type.back
                       ? Camera.Constants.Type.front
@@ -189,6 +212,7 @@ export default function CameraScreen() {
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => {
+                  console.log("Toggling flash.");
                   setFlashMode(
                     flashMode === Camera.Constants.FlashMode.off
                       ? Camera.Constants.FlashMode.torch
@@ -201,16 +225,22 @@ export default function CameraScreen() {
             </View>
             <View style={styles.bottomButtonContainer}>
               <TouchableOpacity
-                style={styles.takePictureButton}
-                onPress={takePicture}
-              >
-                <View style={styles.innerCircle} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.galleryButton}
-                onPress={pickImage}
+                style={styles.button}
+                onPress={() => {
+                  console.log("Opening image picker.");
+                  pickImage();
+                }}
               >
                 <Ionicons name="images" size={36} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={takePicture}
+              >
+                <View style={styles.captureCircle} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button}>
+                <Ionicons name="images-outline" size={36} color="white" />
               </TouchableOpacity>
             </View>
           </>
@@ -287,5 +317,22 @@ const styles = StyleSheet.create({
   takenPicture: {
     width: "100%",
     height: "100%",
+  },
+  captureButton: {
+    alignSelf: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
+    borderRadius: 50,
+    height: 70,
+    width: 70,
+    justifyContent: "center",
+    borderWidth: 5,
+    borderColor: "white",
+  },
+  captureCircle: {
+    backgroundColor: "white",
+    borderRadius: 35,
+    height: 60,
+    width: 60,
   },
 });
