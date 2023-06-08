@@ -24,10 +24,6 @@ export const MapScreen = ({ navigation, route }: any) => {
       ) : (
         <Text>No location available</Text> // Display message when location is not available
       )}
-      <Button
-        title="Go to Profile"
-        onPress={() => navigation.navigate("Profile")}
-      />
     </View>
   );
 };

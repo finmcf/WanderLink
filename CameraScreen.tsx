@@ -85,7 +85,13 @@ export default function CameraScreen() {
 
   const uploadImage = async (uri) => {
     console.log("Upload started for URI: ", uri);
-    const storageRef = ref(storage, `userMedia/${user.uid}/${Date.now()}.jpg`);
+
+    // Generating the unique id with the format {user-id}_{timestamp}_{random-string}
+    const uniqueImageId = `${user.uid}_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2, 11)}`;
+
+    const storageRef = ref(storage, `userMedia/${uniqueImageId}.jpg`);
 
     const response = await fetch(uri);
     const blob = await response.blob();
