@@ -3,20 +3,27 @@ import * as Location from "expo-location";
 import { auth, db } from "./firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
+// Define the shape of your context
 interface ContextProps {
   location: Location.LocationObject | null;
   user: firebase.User | null;
   userData: any;
+  countryCode: string | null;
+  shouldRerenderProfile: boolean;
+  setShouldRerenderProfile: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const AppContext = createContext<Partial<ContextProps>>({});
 
-export const AppProvider = ({ children }) => {
+export const AppProvider: React.FC = ({ children }) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const [countryCode, setCountryCode] = useState<string | null>(null);
   const [user, setUser] = useState<firebase.User | null>(null);
   const [userData, setUserData] = useState<any>(null);
+  const [shouldRerenderProfile, setShouldRerenderProfile] =
+    useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
@@ -27,6 +34,17 @@ export const AppProvider = ({ children }) => {
 
       let location = await Location.getCurrentPositionAsync({});
       setLocation(location);
+
+      // Reverse geocode to get country code
+      if (location && location.coords) {
+        const reverseGeocode = await Location.reverseGeocodeAsync({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+        if (reverseGeocode && reverseGeocode.length > 0) {
+          setCountryCode(reverseGeocode[0].isoCountryCode);
+        }
+      }
     })();
 
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -53,7 +71,16 @@ export const AppProvider = ({ children }) => {
   }, [userData]);
 
   return (
-    <AppContext.Provider value={{ location, user, userData }}>
+    <AppContext.Provider
+      value={{
+        location,
+        user,
+        userData,
+        countryCode,
+        shouldRerenderProfile,
+        setShouldRerenderProfile,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

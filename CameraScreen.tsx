@@ -27,7 +27,7 @@ export default function CameraScreen() {
   const cameraRef = useRef(null);
   const [key, setKey] = useState(0);
 
-  const { location, user } = useContext(AppContext);
+  const { location, user, setShouldRerenderProfile } = useContext(AppContext);
 
   console.log("User Context: ", user);
   console.log("Location Context: ", location);
@@ -91,7 +91,10 @@ export default function CameraScreen() {
       .toString(36)
       .slice(2, 11)}`;
 
-    const storageRef = ref(storage, `userMedia/${uniqueImageId}.jpg`);
+    const storageRef = ref(
+      storage,
+      `userMedia/${user.uid}/${uniqueImageId}.jpg`
+    );
 
     const response = await fetch(uri);
     const blob = await response.blob();
@@ -128,7 +131,10 @@ export default function CameraScreen() {
                 },
               }),
             })
-              .then(() => console.log("Document updated"))
+              .then(() => {
+                console.log("Document updated");
+                setShouldRerenderProfile(true); // Set shouldRerenderProfile to true after successful upload
+              })
               .catch((error) => {
                 console.error("Error updating document: ", error);
               });

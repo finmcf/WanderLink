@@ -17,7 +17,8 @@ const windowWidth = Dimensions.get("window").width;
 const imageSize = windowWidth / 2;
 
 export const ProfileScreen = ({ navigation }) => {
-  const { user, userData } = useContext(AppContext);
+  const { user, userData, shouldRerenderProfile, setShouldRerenderProfile } =
+    useContext(AppContext);
   const [userImages, setUserImages] = useState([]);
 
   useEffect(() => {
@@ -25,20 +26,22 @@ export const ProfileScreen = ({ navigation }) => {
       const listRef = ref(storage, `userMedia/${user.uid}`);
       listAll(listRef)
         .then((res) => {
-          res.items.forEach((itemRef) => {
-            getDownloadURL(itemRef)
-              .then((url) => {
-                console.log("Image URL: ", url);
-                setUserImages((prev) => [...prev, url]);
-              })
-              .catch((error) => console.log(error));
-          });
+          const promises = res.items.map((itemRef) => getDownloadURL(itemRef));
+          return Promise.all(promises);
+        })
+        .then((newUrls) => {
+          setUserImages(newUrls);
         })
         .catch((error) => {
           console.log(error);
+        })
+        .finally(() => {
+          if (shouldRerenderProfile) {
+            setShouldRerenderProfile(false);
+          }
         });
     }
-  }, [user]);
+  }, [user, shouldRerenderProfile]);
 
   const renderItem = ({ item }) => (
     <View>
