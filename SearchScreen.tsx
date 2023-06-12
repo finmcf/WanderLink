@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TextInput, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  FlatList,
+  Image,
+} from "react-native";
 import { db } from "./firebaseConfig";
 import {
   collection,
   query,
   onSnapshot,
-  where,
   orderBy,
   startAt,
   endAt,
@@ -33,6 +39,7 @@ const SearchScreen = () => {
         return {
           _id: documentSnapshot.id,
           name: documentSnapshot.data().username,
+          profilePictureUrl: documentSnapshot.data().profilePictureUrl,
         };
       });
 
@@ -56,6 +63,10 @@ const SearchScreen = () => {
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.userContainer}>
+            <Image
+              style={styles.profilePicture}
+              source={{ uri: item.profilePictureUrl }}
+            />
             <Text style={styles.username}>{item.name}</Text>
           </View>
         )}
@@ -78,9 +89,17 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
   userContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
+  },
+  profilePicture: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
   },
   username: {
     fontSize: 18,
