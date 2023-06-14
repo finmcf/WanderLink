@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,13 +15,15 @@ import {
   orderBy,
   startAt,
   endAt,
+  limit,
 } from "firebase/firestore";
 
 const SearchScreen = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const searchTimeout = useRef(null);
 
-  useEffect(() => {
+  const loadUsers = useCallback(() => {
     if (searchText.trim() === "") {
       setSearchResults([]);
       return;
@@ -30,25 +32,39 @@ const SearchScreen = () => {
     const usersRef = collection(db, "Users");
     const q = query(
       usersRef,
-      orderBy("username"),
+      orderBy("userInformation.username"),
       startAt(searchText),
-      endAt(searchText + "\uf8ff")
+      endAt(searchText + "\uf8ff"),
+      limit(50)
     );
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const users = querySnapshot.docs.map((documentSnapshot) => {
+        const data = documentSnapshot.data();
+        const userInfo = data.userInformation || {};
         return {
           _id: documentSnapshot.id,
-          name: documentSnapshot.data().username,
-          profilePictureUrl: documentSnapshot.data().profilePictureUrl,
+          name: userInfo.username,
+          profilePictureUrl: userInfo.profilePicture,
         };
       });
 
       setSearchResults(users);
     });
 
-    // Unsubscribe from events when no longer in use
-    return () => unsubscribe();
+    return unsubscribe;
   }, [searchText]);
+
+  useEffect(() => {
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+    searchTimeout.current = setTimeout(loadUsers, 500);
+    return () => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+      }
+    };
+  }, [searchText, loadUsers]);
 
   return (
     <View style={styles.container}>
@@ -64,8 +80,8 @@ const SearchScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.userContainer}>
             <Image
-              style={styles.profilePicture}
               source={{ uri: item.profilePictureUrl }}
+              style={styles.profileImage}
             />
             <Text style={styles.username}>{item.name}</Text>
           </View>
@@ -95,10 +111,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
   },
-  profilePicture: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     marginRight: 8,
   },
   username: {
