@@ -18,7 +18,7 @@ import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 
 export default function CameraScreen() {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
   const [zoom, setZoom] = useState(0);
@@ -28,9 +28,6 @@ export default function CameraScreen() {
   const [key, setKey] = useState(0);
 
   const { location, user, setShouldRerenderProfile } = useContext(AppContext);
-
-  console.log("User Context: ", user);
-  console.log("Location Context: ", location);
 
   useEffect(() => {
     (async () => {
@@ -78,15 +75,13 @@ export default function CameraScreen() {
 
     console.log("Image Picker Result: ", result);
 
-    if (!result.cancelled) {
-      // Handle the selected image
+    // Updated checks for result object
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setPhotoUri(result.assets[0].uri);
     }
   };
 
   const uploadImage = async (uri) => {
-    console.log("Upload started for URI: ", uri);
-
-    // Generating the unique id with the format {user-id}_{timestamp}_{random-string}
     const uniqueImageId = `${user.uid}_${Date.now()}_${Math.random()
       .toString(36)
       .slice(2, 11)}`;
@@ -147,11 +142,9 @@ export default function CameraScreen() {
   };
 
   if (hasPermission === null) {
-    console.log("No response from permission request yet.");
     return <View />;
   }
   if (hasPermission === false) {
-    console.log("Camera permissions denied.");
     return <Text>No access to camera</Text>;
   }
 
@@ -159,8 +152,6 @@ export default function CameraScreen() {
     if (cameraRef.current && isCameraReady) {
       const photo = await cameraRef.current.takePictureAsync();
       setPhotoUri(photo.uri);
-      console.log("Photo taken, URI: ", photo.uri);
-      console.log("Location during photo taken: ", location);
     }
   };
 
@@ -176,73 +167,54 @@ export default function CameraScreen() {
         flashMode={flashMode}
         zoom={zoom}
         ref={cameraRef}
-        onCameraReady={() => {
-          console.log("Camera is ready.");
-          setIsCameraReady(true);
-        }}
+        onCameraReady={() => setIsCameraReady(true)}
       >
-        {photoUri && (
+        {photoUri ? (
           <View style={styles.takenPictureContainer}>
             <Image source={{ uri: photoUri }} style={styles.takenPicture} />
             <TouchableOpacity
               style={styles.deleteButton}
-              onPress={() => {
-                console.log("Deleting picture.");
-                setPhotoUri(null);
-                setIsCameraReady(false);
-              }}
+              onPress={() => setPhotoUri(null)}
             >
               <Ionicons name="close-circle" size={36} color="white" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.uploadButton}
-              onPress={() => {
-                console.log("Uploading picture.");
-                uploadImage(photoUri);
-              }}
+              onPress={() => uploadImage(photoUri)}
             >
               <Ionicons name="cloud-upload" size={36} color="white" />
             </TouchableOpacity>
           </View>
-        )}
-        {!photoUri && (
+        ) : (
           <>
             <View style={styles.topButtonContainer}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => {
-                  console.log("Switching camera.");
+                onPress={() =>
                   setCameraType(
                     cameraType === Camera.Constants.Type.back
                       ? Camera.Constants.Type.front
                       : Camera.Constants.Type.back
-                  );
-                }}
+                  )
+                }
               >
                 <Ionicons name="camera-reverse" size={36} color="white" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => {
-                  console.log("Toggling flash.");
+                onPress={() =>
                   setFlashMode(
                     flashMode === Camera.Constants.FlashMode.off
                       ? Camera.Constants.FlashMode.torch
                       : Camera.Constants.FlashMode.off
-                  );
-                }}
+                  )
+                }
               >
                 <Ionicons name="flash" size={36} color="white" />
               </TouchableOpacity>
             </View>
             <View style={styles.bottomButtonContainer}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  console.log("Opening image picker.");
-                  pickImage();
-                }}
-              >
+              <TouchableOpacity style={styles.button} onPress={pickImage}>
                 <Ionicons name="images" size={36} color="white" />
               </TouchableOpacity>
               <TouchableOpacity
