@@ -16,6 +16,7 @@ import { storage } from "./firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import * as Location from "expo-location";
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -73,9 +74,6 @@ export default function CameraScreen() {
       quality: 1,
     });
 
-    console.log("Image Picker Result: ", result);
-
-    // Updated checks for result object
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setPhotoUri(result.assets[0].uri);
     }
