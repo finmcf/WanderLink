@@ -33,6 +33,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "bingApiKey": "@env:BING_API_KEY"
     }
   }
 }

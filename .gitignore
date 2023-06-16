@@ -16,3 +16,6 @@ web-build/
 
 # Firebase config
 firebaseConfig.ts
+
+# Environment variables
+.env

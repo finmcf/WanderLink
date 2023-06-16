@@ -16,7 +16,6 @@ import { storage } from "./firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "./firebaseConfig";
-import * as Location from "expo-location";
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
