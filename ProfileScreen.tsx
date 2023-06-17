@@ -7,6 +7,7 @@ import {
   FlatList,
   StyleSheet,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppContext } from "./AppContext";
@@ -17,8 +18,13 @@ const windowWidth = Dimensions.get("window").width;
 const imageSize = windowWidth / 2;
 
 export const ProfileScreen = ({ navigation }) => {
-  const { user, userData, shouldRerenderProfile, setShouldRerenderProfile } =
-    useContext(AppContext);
+  const {
+    user,
+    userData,
+    shouldRerenderProfile,
+    setShouldRerenderProfile,
+    profilePicUrl,
+  } = useContext(AppContext); // <-- Include the profilePicUrl here
   const [userImages, setUserImages] = useState([]);
 
   useEffect(() => {
@@ -52,14 +58,16 @@ export const ProfileScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.profileHeader}>
-        <Image
-          style={styles.profilePic}
-          source={{
-            uri: userData
-              ? userData.profilePicUrl
-              : "https://via.placeholder.com/150",
-          }}
-        />
+        <TouchableOpacity
+          onLongPress={() => navigation.navigate("ProfilePictureCameraScreen")}
+        >
+          <Image
+            style={styles.profilePic}
+            source={{
+              uri: profilePicUrl || "https://via.placeholder.com/150", // <-- use profilePicUrl from context here
+            }}
+          />
+        </TouchableOpacity>
         <View style={styles.profileDetails}>
           <Text style={styles.username}>
             {userData ? userData.username : "Username"}
@@ -112,8 +120,8 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   profileDetails: {
+    alignItems: "center",
     flex: 1,
-    marginLeft: 10,
   },
   username: {
     fontSize: 18,
@@ -121,15 +129,14 @@ const styles = StyleSheet.create({
   },
   followContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 5,
+    justifyContent: "space-around",
+    width: "100%",
   },
   followCount: {
-    fontSize: 16,
+    marginVertical: 5,
   },
   bio: {
-    fontSize: 14,
-    color: "#888",
+    fontSize: 16,
   },
   postImage: {
     width: imageSize,

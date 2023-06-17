@@ -15,7 +15,8 @@ import SocialScreen from "./SocialScreen";
 import SearchScreen from "./SearchScreen";
 import { MapScreen } from "./MapScreen";
 import CountrySelectScreen from "./CountrySelectScreen";
-import { AppProvider } from "./AppContext"; // Update this import
+import ProfilePictureCameraScreen from "./ProfilePictureCameraScreen";
+import { AppProvider } from "./AppContext";
 
 const Stack = createStackNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -57,12 +58,15 @@ const MainTabScreen = () => (
       },
       tabBarActiveTintColor: "tomato",
       tabBarInactiveTintColor: "gray",
-      tabBarStyle: { display: "flex" },
     })}
   >
     <BottomTab.Screen name="Profile" component={ProfileScreen} />
     <BottomTab.Screen name="Social" component={SocialTabScreen} />
-    <BottomTab.Screen name="Camera" component={CameraScreen} />
+    <BottomTab.Screen
+      name="Camera"
+      component={CameraScreen}
+      options={{ tabBarStyle: { display: "none" } }}
+    />
     <BottomTab.Screen name="Chat" component={ChatScreen} />
     <BottomTab.Screen name="Settings" component={SettingsScreen} />
   </BottomTab.Navigator>
@@ -81,6 +85,10 @@ export default function App() {
           <Stack.Screen name="CountrySelect" component={CountrySelectScreen} />
           <Stack.Screen name="Main" component={MainTabScreen} />
           <Stack.Screen name="SearchScreen" component={SearchScreen} />
+          <Stack.Screen
+            name="ProfilePictureCameraScreen"
+            component={ProfilePictureCameraScreen}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>

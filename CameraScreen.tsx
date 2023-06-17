@@ -16,6 +16,7 @@ import { storage } from "./firebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -29,6 +30,8 @@ export default function CameraScreen() {
 
   const { location, user, setShouldRerenderProfile } = useContext(AppContext);
 
+  const navigation = useNavigation();
+
   useEffect(() => {
     (async () => {
       const cameraPermission = await Camera.requestCameraPermissionsAsync();
@@ -40,6 +43,32 @@ export default function CameraScreen() {
       );
     })();
   }, []);
+
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", async () => {
+      // Reset state variables
+      setCameraType(Camera.Constants.Type.back);
+      setFlashMode(Camera.Constants.FlashMode.off);
+      setZoom(0);
+      setPhotoUri(null);
+      setIsCameraReady(false);
+      setKey((prevKey) => prevKey + 1); // Force re-render of the camera
+
+      // Re-request camera and microphone permissions
+      const cameraPermission = await Camera.requestCameraPermissionsAsync();
+      const microphonePermission =
+        await Camera.requestMicrophonePermissionsAsync();
+      setHasPermission(
+        cameraPermission.status === "granted" &&
+          microphonePermission.status === "granted"
+      );
+    });
+
+    return () => {
+      // Cleanup the event listener
+      unsubscribeFocus();
+    };
+  }, [navigation]);
 
   useEffect(() => {
     if (!photoUri) {
@@ -166,6 +195,14 @@ export default function CameraScreen() {
         ref={cameraRef}
         onCameraReady={() => setIsCameraReady(true)}
       >
+        <View style={styles.backButtonContainer}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={36} color="white" />
+          </TouchableOpacity>
+        </View>
         {photoUri ? (
           <View style={styles.takenPictureContainer}>
             <Image source={{ uri: photoUri }} style={styles.takenPicture} />
@@ -315,5 +352,13 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     height: 60,
     width: 60,
+  },
+  backButtonContainer: {
+    position: "absolute",
+    top: 20,
+    left: 200,
+  },
+  backButton: {
+    padding: 10,
   },
 });
