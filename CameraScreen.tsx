@@ -28,7 +28,8 @@ export default function CameraScreen() {
   const cameraRef = useRef(null);
   const [key, setKey] = useState(0);
 
-  const { location, user, setShouldRerenderProfile } = useContext(AppContext);
+  const { location, user, setShouldRerenderProfile, previousScreen } =
+    useContext(AppContext);
 
   const navigation = useNavigation();
 
@@ -198,7 +199,15 @@ export default function CameraScreen() {
         <View style={styles.backButtonContainer}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              if (previousScreen) {
+                navigation.navigate(previousScreen.tabName, {
+                  screen: previousScreen.screenName,
+                });
+              } else {
+                navigation.goBack(); // Fallback to just going back
+              }
+            }}
           >
             <Ionicons name="arrow-back" size={36} color="white" />
           </TouchableOpacity>

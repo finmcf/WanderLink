@@ -11,6 +11,8 @@ interface ContextProps {
   countryCode: string | null;
   shouldRerenderProfile: boolean;
   setShouldRerenderProfile: React.Dispatch<React.SetStateAction<boolean>>;
+  previousScreen: string | null; // Added this
+  setPreviousScreen: React.Dispatch<React.SetStateAction<string | null>>; // Added this
 }
 
 export const AppContext = createContext<Partial<ContextProps>>({});
@@ -24,6 +26,7 @@ export const AppProvider: React.FC = ({ children }) => {
   const [userData, setUserData] = useState<any>(null);
   const [shouldRerenderProfile, setShouldRerenderProfile] =
     useState<boolean>(false);
+  const [previousScreen, setPreviousScreen] = useState<string | null>(null); // Added this
 
   useEffect(() => {
     (async () => {
@@ -79,6 +82,8 @@ export const AppProvider: React.FC = ({ children }) => {
         countryCode,
         shouldRerenderProfile,
         setShouldRerenderProfile,
+        previousScreen, // Added this
+        setPreviousScreen, // Added this
       }}
     >
       {children}

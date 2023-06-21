@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -16,7 +16,7 @@ import SearchScreen from "./SearchScreen";
 import { MapScreen } from "./MapScreen";
 import CountrySelectScreen from "./CountrySelectScreen";
 import ProfilePictureCameraScreen from "./ProfilePictureCameraScreen";
-import { AppProvider } from "./AppContext";
+import { AppProvider, AppContext } from "./AppContext";
 
 const Stack = createStackNavigator();
 const BottomTab = createBottomTabNavigator();
@@ -73,9 +73,26 @@ const MainTabScreen = () => (
 );
 
 export default function App() {
+  const { setPreviousScreen } = useContext(AppContext);
+
+  const handleStateChange = (state: any) => {
+    const rootState = state?.routes[state.index]?.state; // Access the state of the root navigator
+    const currentTabName = rootState?.routes[rootState.index]?.name; // Get the current tab name
+    const currentTabState = rootState?.routes[rootState.index]?.state; // Access the state of the current tab navigator
+    const currentScreenName =
+      currentTabState?.routes[currentTabState.index]?.name; // Get the current screen name within the tab navigator
+
+    if (setPreviousScreen) {
+      setPreviousScreen({
+        tabName: currentTabName,
+        screenName: currentScreenName,
+      });
+    }
+  };
+
   return (
     <AppProvider>
-      <NavigationContainer>
+      <NavigationContainer onStateChange={handleStateChange}>
         <Stack.Navigator
           initialRouteName="Login"
           screenOptions={{ headerShown: false }}
