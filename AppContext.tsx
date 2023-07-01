@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect } from "react";
 import * as Location from "expo-location";
-import { auth, db } from "./firebaseConfig";
+import { auth, db, storage } from "./firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { ref, getDownloadURL } from "firebase/storage";
 
 // Define the shape of your context
 interface ContextProps {
@@ -11,8 +12,9 @@ interface ContextProps {
   countryCode: string | null;
   shouldRerenderProfile: boolean;
   setShouldRerenderProfile: React.Dispatch<React.SetStateAction<boolean>>;
-  previousScreen: string | null; // Added this
-  setPreviousScreen: React.Dispatch<React.SetStateAction<string | null>>; // Added this
+  previousScreen: string | null;
+  setPreviousScreen: React.Dispatch<React.SetStateAction<string | null>>;
+  profilePicUrl: string | null;
 }
 
 export const AppContext = createContext<Partial<ContextProps>>({});
@@ -26,7 +28,8 @@ export const AppProvider: React.FC = ({ children }) => {
   const [userData, setUserData] = useState<any>(null);
   const [shouldRerenderProfile, setShouldRerenderProfile] =
     useState<boolean>(false);
-  const [previousScreen, setPreviousScreen] = useState<string | null>(null); // Added this
+  const [previousScreen, setPreviousScreen] = useState<string | null>(null);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -53,15 +56,32 @@ export const AppProvider: React.FC = ({ children }) => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setUser(user);
       if (user) {
-        const docRef = doc(db, "Users", user.uid); // reference to the document
-        const userDoc = await getDoc(docRef); // get the document
+        const docRef = doc(db, "Users", user.uid);
+        const userDoc = await getDoc(docRef);
         if (userDoc.exists()) {
-          setUserData(userDoc.data().userInformation); // access userInformation field
+          setUserData(userDoc.data().userInformation);
         } else {
           console.log("No such document!");
         }
+
+        // Debug Step 2: Log the path used to fetch profile picture
+        const imagePath = `profilePictures/${user.uid}.jpg`;
+        console.log("Trying to fetch profile picture from path:", imagePath);
+
+        const profilePicRef = ref(storage, imagePath);
+        getDownloadURL(profilePicRef)
+          .then((url) => {
+            setProfilePicUrl(url);
+            // Debug Step 1: Log the fetched profile picture URL
+            console.log("Fetched profile picture URL:", url);
+          })
+          .catch((error) => {
+            // Debug Step 3: Log any errors that occur when fetching the profile picture
+            console.log("Error fetching profile picture:", error);
+          });
       } else {
         setUserData(null);
+        setProfilePicUrl(null);
       }
     });
 
@@ -82,8 +102,9 @@ export const AppProvider: React.FC = ({ children }) => {
         countryCode,
         shouldRerenderProfile,
         setShouldRerenderProfile,
-        previousScreen, // Added this
-        setPreviousScreen, // Added this
+        previousScreen,
+        setPreviousScreen,
+        profilePicUrl,
       }}
     >
       {children}

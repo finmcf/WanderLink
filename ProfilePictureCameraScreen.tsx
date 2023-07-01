@@ -18,7 +18,7 @@ import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 
-export default function CameraScreen() {
+export default function ProfilePictureCameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [flashMode, setFlashMode] = useState(Camera.Constants.FlashMode.off);
@@ -109,15 +109,10 @@ export default function CameraScreen() {
   };
 
   const uploadProfilePicture = async (uri) => {
-    const uniqueImageId = `${user.uid}_${Date.now()}_${Math.random()
-      .toString(36)
-      .slice(2, 11)}`;
+    // Just use user id as the name
 
-    // Saving to a different folder in Firebase Storage
-    const storageRef = ref(
-      storage,
-      `profilePictures/${user.uid}/${uniqueImageId}.jpg`
-    );
+    // Save directly in the profilePictures folder with the user's uid as the filename
+    const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
 
     const response = await fetch(uri);
     const blob = await response.blob();
@@ -352,7 +347,7 @@ const styles = StyleSheet.create({
     borderColor: "white",
   },
   captureCircle: {
-    backgroundColor: "white",
+    backgroundColor: "red",
     borderRadius: 35,
     height: 60,
     width: 60,
