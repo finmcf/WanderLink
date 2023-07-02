@@ -24,7 +24,7 @@ export const ProfileScreen = ({ navigation }) => {
     shouldRerenderProfile,
     setShouldRerenderProfile,
     profilePicUrl,
-  } = useContext(AppContext); // <-- Include the profilePicUrl here
+  } = useContext(AppContext);
   const [userImages, setUserImages] = useState([]);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export const ProfileScreen = ({ navigation }) => {
           <Image
             style={styles.profilePic}
             source={{
-              uri: profilePicUrl || "https://via.placeholder.com/150", // <-- use profilePicUrl from context here
+              uri: profilePicUrl || "https://via.placeholder.com/150",
             }}
           />
         </TouchableOpacity>
@@ -72,12 +72,9 @@ export const ProfileScreen = ({ navigation }) => {
           <Text style={styles.username}>
             {userData ? userData.username : "Username"}
           </Text>
-          <View style={styles.followContainer}>
-            <Text style={styles.followCount}>
-              {userData ? userData.followers : 0} Followers
-            </Text>
-            <Text style={styles.followCount}>
-              {userData ? userData.following : 0} Following
+          <View style={styles.friendContainer}>
+            <Text style={styles.friendCount}>
+              {userData ? userData.friendsCount : 0} Friends{" "}
             </Text>
           </View>
           <Text style={styles.bio}>
@@ -127,12 +124,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  followContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+  friendContainer: {
     width: "100%",
   },
-  followCount: {
+  friendCount: {
     marginVertical: 5,
   },
   bio: {

@@ -60,6 +60,8 @@ const RegisterScreen = ({ navigation }) => {
           email: email,
           userId: userCredential.user.uid,
           profilePicture: defaultProfilePictureURL,
+          friendsCount: 0, // initialized friendsCount to 0
+          friendsList: [], // initialized friendsList to an empty array
         },
       });
       navigation.navigate("Main", { screen: "Profile" });
