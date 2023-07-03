@@ -86,7 +86,7 @@ const SearchScreen = () => {
   }, [searchText, loadUsers]);
 
   const handleUserPress = (userId) => {
-    navigation.navigate("SpecificPageName", { userId: userId });
+    navigation.navigate("OtherUserProfile", { userId: userId });
   };
 
   return (

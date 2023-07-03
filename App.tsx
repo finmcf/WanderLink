@@ -4,6 +4,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { OtherUserProfileScreen } from "./OtherUserProfileScreen";
 
 import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
@@ -105,6 +106,11 @@ export default function App() {
           <Stack.Screen
             name="ProfilePictureCameraScreen"
             component={ProfilePictureCameraScreen}
+          />
+
+          <Stack.Screen
+            name="OtherUserProfile"
+            component={OtherUserProfileScreen}
           />
         </Stack.Navigator>
       </NavigationContainer>
