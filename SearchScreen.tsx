@@ -6,8 +6,10 @@ import {
   TextInput,
   FlatList,
   Image,
+  TouchableOpacity,
 } from "react-native";
-import { db } from "./firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import { db, storage } from "./firebaseConfig";
 import {
   collection,
   query,
@@ -17,13 +19,26 @@ import {
   endAt,
   limit,
 } from "firebase/firestore";
+import { ref, getDownloadURL } from "firebase/storage";
 
 const SearchScreen = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const searchTimeout = useRef(null);
+  const navigation = useNavigation();
 
-  const loadUsers = useCallback(() => {
+  const fetchProfilePicture = async (userId) => {
+    const profilePicRef = ref(storage, `profilePictures/${userId}.jpg`);
+    try {
+      const url = await getDownloadURL(profilePicRef);
+      return url;
+    } catch (error) {
+      console.log("Error fetching profile picture:", error);
+      return null;
+    }
+  };
+
+  const loadUsers = useCallback(async () => {
     if (searchText.trim() === "") {
       setSearchResults([]);
       return;
@@ -37,16 +52,20 @@ const SearchScreen = () => {
       endAt(searchText + "\uf8ff"),
       limit(50)
     );
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const users = querySnapshot.docs.map((documentSnapshot) => {
-        const data = documentSnapshot.data();
-        const userInfo = data.userInformation || {};
-        return {
-          _id: documentSnapshot.id,
-          name: userInfo.username,
-          profilePictureUrl: userInfo.profilePicture,
-        };
-      });
+
+    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      const users = await Promise.all(
+        querySnapshot.docs.map(async (documentSnapshot) => {
+          const data = documentSnapshot.data();
+          const userInfo = data.userInformation || {};
+          const profilePicUrl = await fetchProfilePicture(documentSnapshot.id);
+          return {
+            _id: documentSnapshot.id,
+            name: userInfo.username,
+            profilePictureUrl: profilePicUrl,
+          };
+        })
+      );
 
       setSearchResults(users);
     });
@@ -66,6 +85,10 @@ const SearchScreen = () => {
     };
   }, [searchText, loadUsers]);
 
+  const handleUserPress = (userId) => {
+    navigation.navigate("SpecificPageName", { userId: userId });
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -78,13 +101,16 @@ const SearchScreen = () => {
         data={searchResults}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <View style={styles.userContainer}>
+          <TouchableOpacity
+            style={styles.userContainer}
+            onPress={() => handleUserPress(item._id)}
+          >
             <Image
               source={{ uri: item.profilePictureUrl }}
               style={styles.profileImage}
             />
             <Text style={styles.username}>{item.name}</Text>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </View>
