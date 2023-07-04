@@ -4,7 +4,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { OtherUserProfileScreen } from "./OtherUserProfileScreen";
 
 import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
@@ -17,6 +16,9 @@ import SearchScreen from "./SearchScreen";
 import { MapScreen } from "./MapScreen";
 import CountrySelectScreen from "./CountrySelectScreen";
 import ProfilePictureCameraScreen from "./ProfilePictureCameraScreen";
+import FriendRequestsScreen from "./FriendRequestsScreen";
+import NotificationScreen from "./NotificationScreen";
+import { OtherUserProfileScreen } from "./OtherUserProfileScreen";
 import { AppProvider, AppContext } from "./AppContext";
 
 const Stack = createStackNavigator();
@@ -55,6 +57,13 @@ const SocialTopTabScreen = ({ route }) => (
   </TopTab.Navigator>
 );
 
+const NotificationsTopTabScreen = () => (
+  <TopTab.Navigator>
+    <TopTab.Screen name="FriendRequests" component={FriendRequestsScreen} />
+    <TopTab.Screen name="NotificationsList" component={NotificationScreen} />
+  </TopTab.Navigator>
+);
+
 const MainTabScreen = () => (
   <BottomTab.Navigator
     screenOptions={({ route }) => ({
@@ -76,6 +85,9 @@ const MainTabScreen = () => (
           case "Settings":
             iconName = "settings";
             break;
+          case "Notifications":
+            iconName = "notifications";
+            break;
         }
 
         iconName += focused ? "" : "-outline";
@@ -95,6 +107,10 @@ const MainTabScreen = () => (
     />
     <BottomTab.Screen name="Chat" component={ChatScreen} />
     <BottomTab.Screen name="Settings" component={SettingsScreen} />
+    <BottomTab.Screen
+      name="Notifications"
+      component={NotificationsTopTabScreen}
+    />
   </BottomTab.Navigator>
 );
 

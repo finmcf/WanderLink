@@ -44,12 +44,14 @@ const SearchScreen = () => {
       return;
     }
 
+    const lowerCaseSearchText = searchText.toLowerCase(); // Convert searchText to lowercase
+
     const usersRef = collection(db, "Users");
     const q = query(
       usersRef,
-      orderBy("userInformation.username"),
-      startAt(searchText),
-      endAt(searchText + "\uf8ff"),
+      orderBy("userInformation.lowercaseUsername"), // Use lowercaseUsername field for sorting
+      startAt(lowerCaseSearchText),
+      endAt(lowerCaseSearchText + "\uf8ff"),
       limit(50)
     );
 
@@ -61,7 +63,7 @@ const SearchScreen = () => {
           const profilePicUrl = await fetchProfilePicture(documentSnapshot.id);
           return {
             _id: documentSnapshot.id,
-            name: userInfo.username,
+            name: userInfo.username, // Keep using the original username for display
             profilePictureUrl: profilePicUrl,
           };
         })

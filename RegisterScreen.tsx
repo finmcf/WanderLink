@@ -55,13 +55,14 @@ const RegisterScreen = ({ navigation }) => {
       await setDoc(doc(db, "Users", userCredential.user.uid), {
         userInformation: {
           username: username,
+          lowercaseUsername: username.toLowerCase(), // Adding lowercase version of the username
           country: countryCode,
           dateOfBirth: dateOfBirth.toISOString(),
           email: email,
           userId: userCredential.user.uid,
           profilePicture: defaultProfilePictureURL,
-          friendsCount: 0, // initialized friendsCount to 0
-          friendsList: [], // initialized friendsList to an empty array
+          friendsCount: 0,
+          friendsList: [],
         },
       });
       navigation.navigate("Main", { screen: "Profile" });
