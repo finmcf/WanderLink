@@ -28,8 +28,13 @@ export default function ProfilePictureCameraScreen() {
   const cameraRef = useRef(null);
   const [key, setKey] = useState(0);
 
-  const { location, user, setShouldRerenderProfile, previousScreen } =
-    useContext(AppContext);
+  const {
+    location,
+    user,
+    setShouldRerenderProfile,
+    previousScreen,
+    setProfilePicUrl,
+  } = useContext(AppContext);
 
   const navigation = useNavigation();
 
@@ -109,9 +114,6 @@ export default function ProfilePictureCameraScreen() {
   };
 
   const uploadProfilePicture = async (uri) => {
-    // Just use user id as the name
-
-    // Save directly in the profilePictures folder with the user's uid as the filename
     const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
 
     const response = await fetch(uri);
@@ -129,31 +131,35 @@ export default function ProfilePictureCameraScreen() {
       (error) => {
         console.error("Error uploading image: ", error);
       },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref)
-          .then((downloadURL) => {
-            console.log("File available at", downloadURL);
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log("File available at", downloadURL);
 
-            const docRef = doc(db, "Users", user.uid);
+          const docRef = doc(db, "Users", user.uid);
 
-            // Update the profilePicture field in Firestore with the new URL
-            updateDoc(docRef, {
-              profilePicture: {
-                imageUrl: downloadURL,
-                timestamp: Date.now(),
-              },
-            })
-              .then(() => {
-                console.log("Document updated");
-                setShouldRerenderProfile(true); // Set shouldRerenderProfile to true after successful upload
-              })
-              .catch((error) => {
-                console.error("Error updating document: ", error);
-              });
-          })
-          .catch((error) => {
-            console.error("Error getting download URL: ", error);
+          // Update the profilePicture field in Firestore with the new URL
+          await updateDoc(docRef, {
+            profilePicture: {
+              imageUrl: downloadURL,
+              timestamp: Date.now(),
+            },
           });
+
+          console.log("Document updated");
+
+          // Assuming setShouldRerenderProfile is a function to trigger re-render of the profile
+          setShouldRerenderProfile(true);
+
+          // If there is a specific piece of state holding the profilePicture URL,
+          // you should also update it here to the new URL. For example:
+          // setProfilePictureUrl(downloadURL);
+        } catch (error) {
+          console.error(
+            "Error updating document or getting download URL: ",
+            error
+          );
+        }
       }
     );
   };

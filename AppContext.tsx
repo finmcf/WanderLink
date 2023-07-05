@@ -15,6 +15,7 @@ interface ContextProps {
   previousScreen: string | null;
   setPreviousScreen: React.Dispatch<React.SetStateAction<string | null>>;
   profilePicUrl: string | null;
+  setProfilePicUrl: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export const AppContext = createContext<Partial<ContextProps>>({});
@@ -64,19 +65,14 @@ export const AppProvider: React.FC = ({ children }) => {
           console.log("No such document!");
         }
 
-        // Debug Step 2: Log the path used to fetch profile picture
         const imagePath = `profilePictures/${user.uid}.jpg`;
-        console.log("Trying to fetch profile picture from path:", imagePath);
 
         const profilePicRef = ref(storage, imagePath);
         getDownloadURL(profilePicRef)
           .then((url) => {
             setProfilePicUrl(url);
-            // Debug Step 1: Log the fetched profile picture URL
-            console.log("Fetched profile picture URL:", url);
           })
           .catch((error) => {
-            // Debug Step 3: Log any errors that occur when fetching the profile picture
             console.log("Error fetching profile picture:", error);
           });
       } else {
@@ -105,6 +101,7 @@ export const AppProvider: React.FC = ({ children }) => {
         previousScreen,
         setPreviousScreen,
         profilePicUrl,
+        setProfilePicUrl, // Providing setProfilePicUrl through the context
       }}
     >
       {children}

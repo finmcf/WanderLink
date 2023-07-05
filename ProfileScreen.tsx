@@ -47,7 +47,7 @@ export const ProfileScreen = ({ navigation }) => {
           }
         });
     }
-  }, [user, shouldRerenderProfile]);
+  }, [user, shouldRerenderProfile, profilePicUrl]); // Added profilePicUrl as a dependency
 
   const renderItem = ({ item }) => (
     <View>
@@ -64,7 +64,9 @@ export const ProfileScreen = ({ navigation }) => {
           <Image
             style={styles.profilePic}
             source={{
-              uri: profilePicUrl || "https://via.placeholder.com/150",
+              uri: profilePicUrl
+                ? `${profilePicUrl}?${Date.now()}`
+                : "https://via.placeholder.com/150",
             }}
           />
         </TouchableOpacity>
