@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   Button,
   View,
@@ -8,8 +8,8 @@ import {
   Alert,
 } from "react-native";
 import { auth, db } from "./firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import CountryPicker from "react-native-country-picker-modal";
 import { AppContext } from "./AppContext";
@@ -52,19 +52,21 @@ const RegisterScreen = ({ navigation }) => {
         email,
         password
       );
+
       await setDoc(doc(db, "Users", userCredential.user.uid), {
-        userInformation: {
-          username: username,
-          lowercaseUsername: username.toLowerCase(), // Adding lowercase version of the username
-          country: countryCode,
-          dateOfBirth: dateOfBirth.toISOString(),
-          email: email,
-          userId: userCredential.user.uid,
-          profilePicture: defaultProfilePictureURL,
-          friendsCount: 0,
-          friendsList: [],
-        },
+        username: username,
+        lowercaseUsername: username.toLowerCase(),
+        country: countryCode,
+        dateOfBirth: dateOfBirth.toISOString(),
+        email: email,
+        userId: userCredential.user.uid,
+        profilePicture: defaultProfilePictureURL,
+        friendRequests: [], // Array to store friend requests
+        friends: [], // Array to store the user's friends
+        notifications: [], // Array to store notifications
+        conversations: [], // Array to store conversations
       });
+
       navigation.navigate("Main", { screen: "Profile" });
     } catch (error) {
       alert(error);

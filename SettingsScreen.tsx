@@ -51,15 +51,23 @@ const SettingsScreen = () => {
       const userId = user.uid;
 
       // 1. Delete user media from Firebase Storage
-      const listRef = ref(storage, `userMedia/${userId}`);
-      const res = await listAll(listRef);
-      res.items.forEach((itemRef) => {
-        deleteObject(itemRef);
-      });
+      try {
+        const listRef = ref(storage, `userMedia/${userId}`);
+        const res = await listAll(listRef);
+        res.items.forEach((itemRef) => {
+          deleteObject(itemRef);
+        });
+      } catch (error) {
+        console.log("Error deleting user media:", error);
+      }
 
       // 2. Delete profile picture from Firebase Storage
-      const profilePictureRef = ref(storage, `profilePictures/${userId}.jpg`);
-      await deleteObject(profilePictureRef);
+      try {
+        const profilePictureRef = ref(storage, `profilePictures/${userId}.jpg`);
+        await deleteObject(profilePictureRef);
+      } catch (error) {
+        console.log("Error deleting profile picture:", error);
+      }
 
       // 3. Delete user data from Firestore
       const userDocRef = doc(db, "Users", userId);
