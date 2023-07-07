@@ -61,7 +61,8 @@ const RegisterScreen = ({ navigation }) => {
         email: email,
         userId: userCredential.user.uid,
         profilePicture: defaultProfilePictureURL,
-        friendRequests: [], // Array to store friend requests
+        friendRequestsReceived: [], // Array to store friend requests received
+        friendRequestsSent: {}, // Object to store friend requests sent
         friends: [], // Array to store the user's friends
         notifications: [], // Array to store notifications
         conversations: [], // Array to store conversations
