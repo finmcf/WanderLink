@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useContext,
+} from "react";
 import {
   View,
   Text,
@@ -20,8 +26,10 @@ import {
   limit,
 } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage";
+import { AppContext } from "./AppContext";
 
 const SearchScreen = () => {
+  const { user } = useContext(AppContext);
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const searchTimeout = useRef(null);
@@ -44,12 +52,12 @@ const SearchScreen = () => {
       return;
     }
 
-    const lowerCaseSearchText = searchText.toLowerCase(); // Convert searchText to lowercase
+    const lowerCaseSearchText = searchText.toLowerCase();
 
     const usersRef = collection(db, "Users");
     const q = query(
       usersRef,
-      orderBy("userInformation.lowercaseUsername"), // Use lowercaseUsername field for sorting
+      orderBy("userInformation.lowercaseUsername"),
       startAt(lowerCaseSearchText),
       endAt(lowerCaseSearchText + "\uf8ff"),
       limit(50)
@@ -63,8 +71,8 @@ const SearchScreen = () => {
           const profilePicUrl = await fetchProfilePicture(documentSnapshot.id);
           return {
             _id: documentSnapshot.id,
-            name: userInfo.username, // Keep using the original username for display
-            profilePictureUrl: profilePicUrl,
+            name: userInfo.username,
+            profilePictureUrl: profilePicUrl || userInfo.profilePicture,
           };
         })
       );
@@ -88,7 +96,12 @@ const SearchScreen = () => {
   }, [searchText, loadUsers]);
 
   const handleUserPress = (userId) => {
-    navigation.navigate("OtherUserProfile", { userId: userId });
+    // If selected user is the logged-in user, navigate to the ProfileScreen
+    if (user && userId === user.uid) {
+      navigation.navigate("Profile");
+    } else {
+      navigation.navigate("OtherUserProfile", { userId: userId });
+    }
   };
 
   return (

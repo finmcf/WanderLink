@@ -11,7 +11,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { listAll, ref, getDownloadURL } from "firebase/storage";
 import { doc, getDoc } from "firebase/firestore";
+
+import SendFriendRequestButton from "./SendFriendRequestButton";
+
 import { storage, db } from "./firebaseConfig";
+import { useContext } from "react";
+import { AppContext } from "./AppContext";
 
 const windowWidth = Dimensions.get("window").width;
 const imageSize = windowWidth / 2;
@@ -21,6 +26,9 @@ export const OtherUserProfileScreen = ({ route, navigation }) => {
   const [userData, setUserData] = useState(null);
   const [userImages, setUserImages] = useState([]);
   const [profilePicUrl, setProfilePicUrl] = useState("");
+
+  const { user } = useContext(AppContext); // consume the context
+  const loggedInUserId = user ? user.uid : null;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,6 +90,12 @@ export const OtherUserProfileScreen = ({ route, navigation }) => {
           <Text style={styles.bio}>
             {userData ? userData.bio : "This is a bio!"}
           </Text>
+          {loggedInUserId && (
+            <SendFriendRequestButton
+              loggedInUserId={loggedInUserId}
+              profileUserId={userId}
+            />
+          )}
         </View>
       </View>
       <FlatList

@@ -54,13 +54,15 @@ const RegisterScreen = ({ navigation }) => {
       );
 
       await setDoc(doc(db, "Users", userCredential.user.uid), {
-        username: username,
-        lowercaseUsername: username.toLowerCase(),
-        country: countryCode,
-        dateOfBirth: dateOfBirth.toISOString(),
-        email: email,
-        userId: userCredential.user.uid,
-        profilePicture: defaultProfilePictureURL,
+        userInformation: {
+          username: username,
+          lowercaseUsername: username.toLowerCase(),
+          country: countryCode,
+          dateOfBirth: dateOfBirth.toISOString(),
+          email: email,
+          userId: userCredential.user.uid,
+          profilePicture: defaultProfilePictureURL,
+        },
         friendRequestsReceived: [], // Array to store friend requests received
         friendRequestsSent: {}, // Object to store friend requests sent
         friends: [], // Array to store the user's friends
