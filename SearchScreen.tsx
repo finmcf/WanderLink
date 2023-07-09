@@ -24,7 +24,7 @@ import {
   startAt,
   endAt,
   limit,
-} from "firebase/firestoe";
+} from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage";
 import { AppContext } from "./AppContext";
 
