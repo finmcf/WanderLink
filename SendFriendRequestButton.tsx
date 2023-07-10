@@ -92,6 +92,54 @@ const SendFriendRequestButton = ({ loggedInUserId, profileUserId }) => {
     }
   };
 
+  const handleAcceptRequest = async () => {
+    const timestamp = new Date().toISOString();
+    try {
+      // Remove from loggedInUser's received requests
+      await updateDoc(doc(db, "Users", loggedInUserId), {
+        [`friendRequestsReceived.${profileUserId}`]: deleteField(),
+      });
+
+      // Remove from profileUser's sent requests
+      await updateDoc(doc(db, "Users", profileUserId), {
+        [`friendRequestsSent.${loggedInUserId}`]: deleteField(),
+      });
+
+      // Add to loggedInUser's friends
+      await updateDoc(doc(db, "Users", loggedInUserId), {
+        [`friends.${profileUserId}`]: timestamp,
+      });
+
+      // Add to profileUser's friends
+      await updateDoc(doc(db, "Users", profileUserId), {
+        [`friends.${loggedInUserId}`]: timestamp,
+      });
+
+      setRequestReceived(false);
+      setIsFriend(true);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    try {
+      // Remove from loggedInUser's received requests
+      await updateDoc(doc(db, "Users", loggedInUserId), {
+        [`friendRequestsReceived.${profileUserId}`]: deleteField(),
+      });
+
+      // Remove from profileUser's sent requests
+      await updateDoc(doc(db, "Users", profileUserId), {
+        [`friendRequestsSent.${loggedInUserId}`]: deleteField(),
+      });
+
+      setRequestReceived(false);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   const handlePress = () => {
     if (isFriend) {
       Alert.alert(
@@ -127,6 +175,28 @@ const SendFriendRequestButton = ({ loggedInUserId, profileUserId }) => {
         ],
         { cancelable: false }
       );
+    } else if (requestReceived) {
+      Alert.alert(
+        "Friend Request Received",
+        "Do you want to accept the friend request?",
+        [
+          {
+            text: "Accept",
+            onPress: handleAcceptRequest,
+            style: "default",
+          },
+          {
+            text: "Reject",
+            onPress: handleRejectRequest,
+            style: "destructive",
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ],
+        { cancelable: false }
+      );
     } else {
       handleSendRequest();
     }
@@ -139,6 +209,8 @@ const SendFriendRequestButton = ({ loggedInUserId, profileUserId }) => {
           ? "Remove Friend"
           : requestSent
           ? "Request Sent"
+          : requestReceived
+          ? "Respond to Friend Request"
           : "Send Friend Request"}
       </Text>
     </TouchableOpacity>
