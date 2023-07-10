@@ -76,7 +76,10 @@ export const ProfileScreen = ({ navigation }) => {
           </Text>
           <View style={styles.friendContainer}>
             <Text style={styles.friendCount}>
-              {userData ? userData.friendsCount : 0} Friends{" "}
+              {userData && userData.friends
+                ? Object.keys(userData.friends).length
+                : 0}{" "}
+              Friends{" "}
             </Text>
           </View>
           <Text style={styles.bio}>

@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import { db } from "./firebaseConfig";
 import {
@@ -14,7 +13,8 @@ import {
   updateDoc,
   arrayRemove,
   arrayUnion,
-} from "firebase/firestore";
+  increment,
+} from "firebase/firestore"; // Import increment
 import { AppContext } from "./AppContext";
 
 const FriendRequestsScreen = () => {
@@ -46,11 +46,13 @@ const FriendRequestsScreen = () => {
     await updateDoc(userRef, {
       friends: arrayUnion(requesterId),
       friendRequestsReceived: { [requesterId]: arrayRemove() },
+      friendsCount: increment(1), // Increment the user's friend count by 1
     });
 
     await updateDoc(requesterRef, {
       friends: arrayUnion(user.uid),
       friendRequestsSent: { [user.uid]: arrayRemove() },
+      friendsCount: increment(1), // Increment the requester's friend count by 1
     });
 
     // Update the UI
@@ -80,7 +82,8 @@ const FriendRequestsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Friend Requests</Text>
+      <Text style={styles.text}>Friend Requests ({friendRequests.length})</Text>
+
       <FlatList
         data={friendRequests}
         keyExtractor={(item) => item[0]} // Use the user id (first item in the pair) as the key

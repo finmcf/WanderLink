@@ -66,6 +66,7 @@ const RegisterScreen = ({ navigation }) => {
         friendRequestsReceived: {}, // Object to store friend requests received
         friendRequestsSent: {}, // Object to store friend requests sent
         friends: {}, // Object to store the user's friends
+        friendsCount: 0, // Keep track of the number of friends
         notifications: [], // Array to store notifications
         conversations: [], // Array to store conversations
       });
