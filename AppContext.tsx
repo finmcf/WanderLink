@@ -16,6 +16,8 @@ interface ContextProps {
   setPreviousScreen: React.Dispatch<React.SetStateAction<string | null>>;
   profilePicUrl: string | null;
   setProfilePicUrl: React.Dispatch<React.SetStateAction<string | null>>;
+  friendList: string[]; // New prop
+  setFriendList: React.Dispatch<React.SetStateAction<string[]>>; // New prop
 }
 
 export const AppContext = createContext<Partial<ContextProps>>({});
@@ -31,6 +33,7 @@ export const AppProvider: React.FC = ({ children }) => {
     useState<boolean>(false);
   const [previousScreen, setPreviousScreen] = useState<string | null>(null);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+  const [friendList, setFriendList] = useState<string[]>([]); // New state
 
   useEffect(() => {
     (async () => {
@@ -101,7 +104,9 @@ export const AppProvider: React.FC = ({ children }) => {
         previousScreen,
         setPreviousScreen,
         profilePicUrl,
-        setProfilePicUrl, // Providing setProfilePicUrl through the context
+        setProfilePicUrl,
+        friendList, // New context value
+        setFriendList, // New context value
       }}
     >
       {children}

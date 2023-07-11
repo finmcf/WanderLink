@@ -47,7 +47,7 @@ export const ProfileScreen = ({ navigation }) => {
           }
         });
     }
-  }, [user, shouldRerenderProfile, profilePicUrl]); // Added profilePicUrl as a dependency
+  }, [user, shouldRerenderProfile, profilePicUrl]);
 
   const renderItem = ({ item }) => (
     <View>
@@ -74,14 +74,16 @@ export const ProfileScreen = ({ navigation }) => {
           <Text style={styles.username}>
             {userData ? userData.username : "Username"}
           </Text>
-          <View style={styles.friendContainer}>
+          <TouchableOpacity
+            style={styles.friendContainer}
+            onPress={() =>
+              navigation.navigate("FriendListScreen", { userId: user.uid })
+            }
+          >
             <Text style={styles.friendCount}>
-              {userData && userData.friends
-                ? Object.keys(userData.friends).length
-                : 0}{" "}
-              Friends{" "}
+              {userData ? userData.friendsCount : 0} Friends
             </Text>
-          </View>
+          </TouchableOpacity>
           <Text style={styles.bio}>
             {userData ? userData.bio : "This is a bio!"}
           </Text>

@@ -9,31 +9,49 @@ import {
 } from "react-native";
 import { AppContext } from "./AppContext";
 import { db, storage } from "./firebaseConfig";
-import { collection, doc, getDoc, query, where, ref } from "firebase/firestore";
-import { getDownloadURL } from "firebase/storage";
-import { useNavigation } from "@react-navigation/native";
+import { doc, getDoc } from "firebase/firestore";
+import { ref, getDownloadURL } from "firebase/storage";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const FriendListScreen = () => {
-  const { user } = useContext(AppContext);
+  const { user, friendList } = useContext(AppContext);
   const [friends, setFriends] = useState([]);
   const navigation = useNavigation();
+  const route = useRoute();
+  const { userId } = route.params;
+
+  console.log("User ID from route:", userId);
 
   const fetchFriends = async () => {
+    let userFriends = [];
+
     if (user) {
-      const usersRef = collection(db, "Users");
-      const q = query(usersRef, where("friends", "array-contains", user.uid));
-      const querySnapshot = await getDocs(q);
+      console.log("Current user ID:", user.uid);
+
+      if (userId === user.uid) {
+        userFriends = friendList;
+      } else {
+        const docRef = doc(db, "Users", userId);
+        const docSnapshot = await getDoc(docRef);
+        userFriends = docSnapshot.data()?.friends || [];
+      }
+
+      console.log("Fetched friends IDs:", userFriends);
+
       const friendsData = await Promise.all(
-        querySnapshot.docs.map(async (docSnapshot) => {
+        userFriends.map(async (friendId) => {
+          const docRef = doc(db, "Users", friendId);
+          const docSnapshot = await getDoc(docRef);
           const data = docSnapshot.data();
-          const profilePicUrl = await fetchProfilePicture(docSnapshot.id);
+          const profilePicUrl = await fetchProfilePicture(friendId);
           return {
-            _id: docSnapshot.id,
+            _id: friendId,
             name: data.username,
             profilePictureUrl: profilePicUrl || data.profilePicture,
           };
         })
       );
+      console.log("Fetched friends data:", friendsData);
       setFriends(friendsData);
     }
   };
@@ -42,18 +60,20 @@ const FriendListScreen = () => {
     const profilePicRef = ref(storage, `profilePictures/${userId}.jpg`);
     try {
       const url = await getDownloadURL(profilePicRef);
+      console.log(`Profile picture URL for user ${userId}:`, url);
       return url;
     } catch (error) {
-      console.log("Error fetching profile picture:", error);
-      return null;
+      console.error("Error fetching profile picture:", error);
+      return "https://example.com/placeholder-image.jpg"; // Replace with your actual placeholder image URL
     }
   };
 
   useEffect(() => {
     fetchFriends();
-  }, []);
+  }, [userId, friendList]);
 
   const handleFriendPress = (friendId) => {
+    console.log("Navigating to profile of friend with ID:", friendId);
     navigation.navigate("OtherUserProfile", { userId: friendId });
   };
 

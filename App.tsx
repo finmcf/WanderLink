@@ -19,6 +19,7 @@ import ProfilePictureCameraScreen from "./ProfilePictureCameraScreen";
 import FriendRequestsScreen from "./FriendRequestsScreen";
 import NotificationScreen from "./NotificationScreen";
 import { OtherUserProfileScreen } from "./OtherUserProfileScreen";
+import FriendListScreen from "./FriendListScreen"; // import as default
 import { AppProvider, AppContext } from "./AppContext";
 
 const Stack = createStackNavigator();
@@ -147,6 +148,7 @@ export default function App() {
             name="ProfilePictureCameraScreen"
             component={ProfilePictureCameraScreen}
           />
+          <Stack.Screen name="FriendListScreen" component={FriendListScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </AppProvider>

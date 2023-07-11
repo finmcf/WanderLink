@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   View,
   Image,
@@ -15,7 +15,6 @@ import { doc, getDoc } from "firebase/firestore";
 import SendFriendRequestButton from "./SendFriendRequestButton";
 
 import { storage, db } from "./firebaseConfig";
-import { useContext } from "react";
 import { AppContext } from "./AppContext";
 
 const windowWidth = Dimensions.get("window").width;
@@ -82,11 +81,14 @@ export const OtherUserProfileScreen = ({ route, navigation }) => {
           <Text style={styles.username}>
             {userData ? userData.username : "Username"}
           </Text>
-          <View style={styles.friendContainer}>
+          <TouchableOpacity
+            style={styles.friendContainer}
+            onPress={() => navigation.navigate("FriendListScreen", { userId })}
+          >
             <Text style={styles.friendCount}>
-              {userData ? userData.friendsCount : 0} Friends{" "}
+              {userData ? userData.friendsCount : 0} Friends
             </Text>
-          </View>
+          </TouchableOpacity>
           <Text style={styles.bio}>
             {userData ? userData.bio : "This is a bio!"}
           </Text>
