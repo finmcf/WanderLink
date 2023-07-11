@@ -20,14 +20,10 @@ const FriendListScreen = () => {
   const route = useRoute();
   const { userId } = route.params;
 
-  console.log("User ID from route:", userId);
-
   const fetchFriends = async () => {
     let userFriends = [];
 
     if (user) {
-      console.log("Current user ID:", user.uid);
-
       if (userId === user.uid) {
         userFriends = friendList;
       } else {
@@ -35,8 +31,6 @@ const FriendListScreen = () => {
         const docSnapshot = await getDoc(docRef);
         userFriends = docSnapshot.data()?.friends || [];
       }
-
-      console.log("Fetched friends IDs:", userFriends);
 
       const friendsData = await Promise.all(
         userFriends.map(async (friendId) => {
@@ -46,12 +40,12 @@ const FriendListScreen = () => {
           const profilePicUrl = await fetchProfilePicture(friendId);
           return {
             _id: friendId,
-            name: data.username,
-            profilePictureUrl: profilePicUrl || data.profilePicture,
+            name: data.userInformation.username,
+            profilePictureUrl:
+              profilePicUrl || data.userInformation.profilePicture,
           };
         })
       );
-      console.log("Fetched friends data:", friendsData);
       setFriends(friendsData);
     }
   };
@@ -60,11 +54,10 @@ const FriendListScreen = () => {
     const profilePicRef = ref(storage, `profilePictures/${userId}.jpg`);
     try {
       const url = await getDownloadURL(profilePicRef);
-      console.log(`Profile picture URL for user ${userId}:`, url);
       return url;
     } catch (error) {
       console.error("Error fetching profile picture:", error);
-      return "https://example.com/placeholder-image.jpg"; // Replace with your actual placeholder image URL
+      return null; // If there's an error, return null for the picture URL
     }
   };
 
@@ -73,7 +66,6 @@ const FriendListScreen = () => {
   }, [userId, friendList]);
 
   const handleFriendPress = (friendId) => {
-    console.log("Navigating to profile of friend with ID:", friendId);
     navigation.navigate("OtherUserProfile", { userId: friendId });
   };
 
@@ -86,7 +78,11 @@ const FriendListScreen = () => {
           <TouchableOpacity onPress={() => handleFriendPress(item._id)}>
             <View style={styles.friendContainer}>
               <Image
-                source={{ uri: item.profilePictureUrl }}
+                source={{
+                  uri:
+                    item.profilePictureUrl ||
+                    "https://example.com/placeholder-image.jpg",
+                }} // If there's no picture URL, use a placeholder
                 style={styles.profilePic}
               />
               <Text style={styles.username}>{item.name}</Text>
@@ -115,6 +111,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 10,
+    backgroundColor: "gray", // Add a placeholder background color
   },
   username: {
     fontSize: 16,
