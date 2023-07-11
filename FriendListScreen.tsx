@@ -57,7 +57,7 @@ const FriendListScreen = () => {
       return url;
     } catch (error) {
       console.error("Error fetching profile picture:", error);
-      return null; // If there's an error, return null for the picture URL
+      return null;
     }
   };
 
@@ -66,7 +66,12 @@ const FriendListScreen = () => {
   }, [userId, friendList]);
 
   const handleFriendPress = (friendId) => {
-    navigation.navigate("OtherUserProfile", { userId: friendId });
+    // If selected user is the logged-in user, navigate to the ProfileScreen
+    if (user && friendId === user.uid) {
+      navigation.navigate("Profile");
+    } else {
+      navigation.navigate("OtherUserProfile", { userId: friendId });
+    }
   };
 
   return (
@@ -82,7 +87,7 @@ const FriendListScreen = () => {
                   uri:
                     item.profilePictureUrl ||
                     "https://example.com/placeholder-image.jpg",
-                }} // If there's no picture URL, use a placeholder
+                }}
                 style={styles.profilePic}
               />
               <Text style={styles.username}>{item.name}</Text>
@@ -111,7 +116,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 10,
-    backgroundColor: "gray", // Add a placeholder background color
+    backgroundColor: "gray",
   },
   username: {
     fontSize: 16,
