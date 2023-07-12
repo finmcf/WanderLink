@@ -10,7 +10,7 @@ import RegisterScreen from "./RegisterScreen";
 import { ProfileScreen } from "./ProfileScreen";
 import CameraScreen from "./CameraScreen";
 import SettingsScreen from "./SettingsScreen";
-import { ChatScreen } from "./ChatScreen";
+import { ChatMenuScreen } from "./ChatMenuScreen";
 import SocialScreen from "./SocialScreen";
 import SearchScreen from "./SearchScreen";
 import { MapScreen } from "./MapScreen";
@@ -106,7 +106,7 @@ const MainTabScreen = () => (
       component={CameraScreen}
       options={{ tabBarStyle: { display: "none" } }}
     />
-    <BottomTab.Screen name="Chat" component={ChatScreen} />
+    <BottomTab.Screen name="Chat" component={ChatMenuScreen} />
     <BottomTab.Screen name="Settings" component={SettingsScreen} />
     <BottomTab.Screen
       name="Notifications"
