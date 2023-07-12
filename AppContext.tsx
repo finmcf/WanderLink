@@ -64,6 +64,12 @@ export const AppProvider: React.FC = ({ children }) => {
         const userDoc = await getDoc(docRef);
         if (userDoc.exists()) {
           setUserData(userDoc.data().userInformation);
+
+          // Fetch and set friendList from the user document
+          const fetchedFriendList = userDoc.data().friends;
+          if (fetchedFriendList) {
+            setFriendList(fetchedFriendList);
+          }
         } else {
           console.log("No such document!");
         }

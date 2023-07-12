@@ -56,7 +56,6 @@ const FriendListScreen = () => {
       const url = await getDownloadURL(profilePicRef);
       return url;
     } catch (error) {
-      console.error("Error fetching profile picture:", error);
       return null;
     }
   };
@@ -66,7 +65,6 @@ const FriendListScreen = () => {
   }, [userId, friendList]);
 
   const handleFriendPress = (friendId) => {
-    // If selected user is the logged-in user, navigate to the ProfileScreen
     if (user && friendId === user.uid) {
       navigation.navigate("Profile");
     } else {
