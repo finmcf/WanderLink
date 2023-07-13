@@ -10,6 +10,8 @@ import {
   query,
   orderBy,
   addDoc,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
@@ -67,6 +69,7 @@ const ChatScreen = () => {
       db,
       `conversations/${conversationId}/messages`
     );
+    const conversationRef = doc(db, `conversations`, conversationId);
 
     const promises = newMessages.map(async (message) => {
       const { text, image, video } = message;
@@ -108,6 +111,9 @@ const ChatScreen = () => {
         userName: user?.displayName,
         timestamp,
       });
+
+      // Update last message timestamp
+      await updateDoc(conversationRef, { lastMessageTimestamp: timestamp });
     });
 
     await Promise.all(promises);
