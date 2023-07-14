@@ -99,6 +99,11 @@ export const OtherUserProfileScreen = ({ route, navigation }) => {
             />
           )}
         </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("ChatScreen", { userId })}
+        >
+          <Ionicons name="chatbubbles-outline" size={32} color="black" />
+        </TouchableOpacity>
       </View>
       <FlatList
         data={userImages}

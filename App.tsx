@@ -11,6 +11,7 @@ import { ProfileScreen } from "./ProfileScreen";
 import CameraScreen from "./CameraScreen";
 import SettingsScreen from "./SettingsScreen";
 import { ChatMenuScreen } from "./ChatMenuScreen";
+import ChatScreen from "./ChatScreen";
 import SocialScreen from "./SocialScreen";
 import SearchScreen from "./SearchScreen";
 import { MapScreen } from "./MapScreen";
@@ -19,13 +20,14 @@ import ProfilePictureCameraScreen from "./ProfilePictureCameraScreen";
 import FriendRequestsScreen from "./FriendRequestsScreen";
 import NotificationScreen from "./NotificationScreen";
 import { OtherUserProfileScreen } from "./OtherUserProfileScreen";
-import FriendListScreen from "./FriendListScreen"; // import as default
+import FriendListScreen from "./FriendListScreen";
 import { AppProvider, AppContext } from "./AppContext";
 
 const Stack = createStackNavigator();
 const BottomTab = createBottomTabNavigator();
 const TopTab = createMaterialTopTabNavigator();
 const SocialStack = createStackNavigator();
+const ChatStack = createStackNavigator();
 
 const SocialStackScreen = () => (
   <SocialStack.Navigator>
@@ -63,6 +65,13 @@ const NotificationsTopTabScreen = () => (
     <TopTab.Screen name="FriendRequests" component={FriendRequestsScreen} />
     <TopTab.Screen name="NotificationsList" component={NotificationScreen} />
   </TopTab.Navigator>
+);
+
+const ChatStackScreen = () => (
+  <ChatStack.Navigator>
+    <ChatStack.Screen name="ChatMenu" component={ChatMenuScreen} />
+    <ChatStack.Screen name="ChatScreen" component={ChatScreen} />
+  </ChatStack.Navigator>
 );
 
 const MainTabScreen = () => (
@@ -106,7 +115,7 @@ const MainTabScreen = () => (
       component={CameraScreen}
       options={{ tabBarStyle: { display: "none" } }}
     />
-    <BottomTab.Screen name="Chat" component={ChatMenuScreen} />
+    <BottomTab.Screen name="Chat" component={ChatStackScreen} />
     <BottomTab.Screen name="Settings" component={SettingsScreen} />
     <BottomTab.Screen
       name="Notifications"

@@ -12,6 +12,8 @@ import {
   addDoc,
   updateDoc,
   doc,
+  getDoc,
+  setDoc,
 } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
@@ -19,9 +21,13 @@ import * as ImagePicker from "expo-image-picker";
 const ChatScreen = () => {
   const { user } = useContext(AppContext);
   const route = useRoute();
-  const conversationId = route.params?.conversationId;
+  const otherUserId = route.params?.userId;
+  const conversationId = `${Math.min(user.uid, otherUserId)}_${Math.max(
+    user.uid,
+    otherUserId
+  )}`;
 
-  const [messages, setMessages] = useState<GiftedChatMessage[]>([]);
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -33,6 +39,17 @@ const ChatScreen = () => {
         }
       }
     })();
+
+    const fetchConversation = async () => {
+      const conversationRef = doc(db, `conversations`, conversationId);
+      const conversationSnapshot = await getDoc(conversationRef);
+
+      if (!conversationSnapshot.exists()) {
+        await setDoc(conversationRef, { lastMessageTimestamp: Date.now() });
+      }
+    };
+
+    fetchConversation();
 
     const messagesRef = collection(
       db,
@@ -148,7 +165,6 @@ const ChatScreen = () => {
       messages={messages}
       onSend={(newMessages) => onSend(newMessages)}
       user={{ _id: user?.uid }}
-      renderBubble={renderBubble}
       renderActions={() => <Button title="Pick Image" onPress={pickImage} />}
     />
   );
