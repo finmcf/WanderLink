@@ -100,7 +100,12 @@ export const OtherUserProfileScreen = ({ route, navigation }) => {
           )}
         </View>
         <TouchableOpacity
-          onPress={() => navigation.navigate("ChatScreen", { userId })}
+          onPress={() =>
+            navigation.navigate("Chat", {
+              screen: "ChatScreen",
+              params: { userId },
+            })
+          }
         >
           <Ionicons name="chatbubbles-outline" size={32} color="black" />
         </TouchableOpacity>
