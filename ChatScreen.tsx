@@ -22,10 +22,7 @@ const ChatScreen = () => {
   const { user } = useContext(AppContext);
   const route = useRoute();
   const otherUserId = route.params?.userId;
-  const conversationId = `${Math.min(user.uid, otherUserId)}_${Math.max(
-    user.uid,
-    otherUserId
-  )}`;
+  const conversationId = [user.uid, otherUserId].sort().join("_");
 
   const [messages, setMessages] = useState([]);
 
@@ -41,7 +38,7 @@ const ChatScreen = () => {
     })();
 
     const fetchConversation = async () => {
-      const conversationRef = doc(db, `conversations`, conversationId);
+      const conversationRef = doc(db, `Conversations`, conversationId);
       const conversationSnapshot = await getDoc(conversationRef);
 
       if (!conversationSnapshot.exists()) {
@@ -53,7 +50,7 @@ const ChatScreen = () => {
 
     const messagesRef = collection(
       db,
-      `conversations/${conversationId}/messages`
+      `Conversations/${conversationId}/messages`
     );
     const messagesQuery = query(messagesRef, orderBy("timestamp", "desc"));
 
@@ -84,9 +81,9 @@ const ChatScreen = () => {
   const onSend = async (newMessages = []) => {
     const messagesRef = collection(
       db,
-      `conversations/${conversationId}/messages`
+      `Conversations/${conversationId}/messages`
     );
-    const conversationRef = doc(db, `conversations`, conversationId);
+    const conversationRef = doc(db, `Conversations`, conversationId);
 
     const promises = newMessages.map(async (message) => {
       const { text, image, video } = message;
