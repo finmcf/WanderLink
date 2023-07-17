@@ -119,8 +119,8 @@ const ChatScreen = () => {
       const timestamp = new Date().getTime();
       await addDoc(messagesRef, {
         text,
-        image: imageUrl,
-        video: videoUrl,
+        image: imageUrl ? imageUrl : null, // Change is made here
+        video: videoUrl ? videoUrl : null, // And here
         userId: user?.uid,
         userName: user?.displayName,
         timestamp,
