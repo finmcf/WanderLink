@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Button, Platform } from "react-native";
-import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { GiftedChat } from "react-native-gifted-chat";
 import { useRoute } from "@react-navigation/native";
 import { db, storage } from "./firebaseConfig";
 import { AppContext } from "./AppContext";
@@ -10,10 +10,10 @@ import {
   query,
   orderBy,
   addDoc,
-  updateDoc,
   doc,
   getDoc,
   setDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
@@ -25,8 +25,10 @@ const ChatScreen = () => {
   const conversationId = [user.uid, otherUserId].sort().join("_");
 
   const [messages, setMessages] = useState([]);
+  const [conversationExists, setConversationExists] = useState(false);
 
   useEffect(() => {
+    // Image permission
     (async () => {
       if (Platform.OS !== "web") {
         const { status } =
@@ -37,17 +39,19 @@ const ChatScreen = () => {
       }
     })();
 
+    // Fetch conversation
     const fetchConversation = async () => {
       const conversationRef = doc(db, `Conversations`, conversationId);
       const conversationSnapshot = await getDoc(conversationRef);
 
-      if (!conversationSnapshot.exists()) {
-        await setDoc(conversationRef, { lastMessageTimestamp: Date.now() });
+      if (conversationSnapshot.exists()) {
+        setConversationExists(true);
       }
     };
 
     fetchConversation();
 
+    // Fetch messages
     const messagesRef = collection(
       db,
       `Conversations/${conversationId}/messages`
@@ -62,8 +66,8 @@ const ChatScreen = () => {
           text: data.text,
           createdAt: new Date(data.timestamp),
           user: {
-            _id: data.userId,
-            name: data.userName,
+            _id: user?.uid,
+            name: user?.userInformation?.username,
           },
           image: data.image,
           video: data.video,
@@ -85,11 +89,34 @@ const ChatScreen = () => {
     );
     const conversationRef = doc(db, `Conversations`, conversationId);
 
+    const timestamp = new Date().getTime();
+
+    // Update both users' conversation array
+    if (!conversationExists) {
+      const user1Ref = doc(db, "Users", user.uid);
+      const user2Ref = doc(db, "Users", otherUserId);
+
+      await setDoc(
+        user1Ref,
+        { conversations: arrayUnion(conversationId) },
+        { merge: true }
+      );
+      await setDoc(
+        user2Ref,
+        { conversations: arrayUnion(conversationId) },
+        { merge: true }
+      );
+
+      setConversationExists(true);
+    }
+
+    // Save each message to firestore
     const promises = newMessages.map(async (message) => {
       const { text, image, video } = message;
 
       let imageUrl, videoUrl;
 
+      // Upload images/videos
       if (image || video) {
         const fileRef = ref(storage, `messages/${message._id}`);
         const uploadTask = uploadBytesResumable(fileRef, image || video);
@@ -97,17 +124,14 @@ const ChatScreen = () => {
         await new Promise((resolve, reject) => {
           uploadTask.on(
             "state_changed",
-            (snapshot) => {
-              // You can monitor the upload progress here
-            },
+            (snapshot) => {},
             (error) => {
               console.log("Upload error:", error);
               reject(error);
             },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                resolve(downloadURL);
-              });
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
             }
           );
         });
@@ -116,18 +140,21 @@ const ChatScreen = () => {
         if (video) videoUrl = await getDownloadURL(fileRef);
       }
 
-      const timestamp = new Date().getTime();
       await addDoc(messagesRef, {
         text,
-        image: imageUrl ? imageUrl : null, // Change is made here
-        video: videoUrl ? videoUrl : null, // And here
+        image: imageUrl || null,
+        video: videoUrl || null,
         userId: user?.uid,
         userName: user?.displayName,
         timestamp,
       });
 
       // Update last message timestamp
-      await updateDoc(conversationRef, { lastMessageTimestamp: timestamp });
+      await setDoc(
+        conversationRef,
+        { lastMessageTimestamp: timestamp },
+        { merge: true }
+      );
     });
 
     await Promise.all(promises);

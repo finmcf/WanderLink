@@ -16,8 +16,10 @@ interface ContextProps {
   setPreviousScreen: React.Dispatch<React.SetStateAction<string | null>>;
   profilePicUrl: string | null;
   setProfilePicUrl: React.Dispatch<React.SetStateAction<string | null>>;
-  friendList: string[]; // New prop
-  setFriendList: React.Dispatch<React.SetStateAction<string[]>>; // New prop
+  friendList: string[];
+  setFriendList: React.Dispatch<React.SetStateAction<string[]>>;
+  conversations: string[]; // New prop
+  setConversations: React.Dispatch<React.SetStateAction<string[]>>; // New prop
 }
 
 export const AppContext = createContext<Partial<ContextProps>>({});
@@ -33,7 +35,8 @@ export const AppProvider: React.FC = ({ children }) => {
     useState<boolean>(false);
   const [previousScreen, setPreviousScreen] = useState<string | null>(null);
   const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
-  const [friendList, setFriendList] = useState<string[]>([]); // New state
+  const [friendList, setFriendList] = useState<string[]>([]);
+  const [conversations, setConversations] = useState<string[]>([]); // New state
 
   useEffect(() => {
     (async () => {
@@ -70,6 +73,12 @@ export const AppProvider: React.FC = ({ children }) => {
           if (fetchedFriendList) {
             setFriendList(fetchedFriendList);
           }
+
+          // Fetch and set conversations from the user document
+          const fetchedConversations = userDoc.data().conversations;
+          if (fetchedConversations) {
+            setConversations(fetchedConversations);
+          }
         } else {
           console.log("No such document!");
         }
@@ -87,6 +96,8 @@ export const AppProvider: React.FC = ({ children }) => {
       } else {
         setUserData(null);
         setProfilePicUrl(null);
+        setFriendList([]); // Reset friendList
+        setConversations([]); // Reset conversations
       }
     });
 
@@ -111,8 +122,10 @@ export const AppProvider: React.FC = ({ children }) => {
         setPreviousScreen,
         profilePicUrl,
         setProfilePicUrl,
-        friendList, // New context value
-        setFriendList, // New context value
+        friendList,
+        setFriendList,
+        conversations, // New context value
+        setConversations, // New context value
       }}
     >
       {children}

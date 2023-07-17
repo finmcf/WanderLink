@@ -8,14 +8,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { db, storage } from "./firebaseConfig";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { ref, getDownloadURL } from "firebase/storage";
 import { AppContext } from "./AppContext";
 
 export const ChatMenuScreen = () => {
-  const { user } = useContext(AppContext);
-  const [conversations, setConversations] = useState([]);
+  const { user, conversations } = useContext(AppContext);
+  const [profilePictures, setProfilePictures] = useState({});
   const navigation = useNavigation();
 
   const fetchProfilePicture = async (userId) => {
@@ -30,36 +28,23 @@ export const ChatMenuScreen = () => {
   };
 
   useEffect(() => {
-    const conversationsRef = collection(db, "Conversations");
-    const convQuery = query(
-      conversationsRef,
-      orderBy("lastMessageTimestamp", "desc")
-    );
-
-    const unsubscribe = onSnapshot(convQuery, async (snapshot) => {
-      const loadedConversations = await Promise.all(
-        snapshot.docs
-          .filter((doc) => doc.data().participants.includes(user.uid)) // filter for conversations where the current user is a participant
-          .map(async (doc) => {
-            const data = doc.data();
-            const otherUserId = data.participants.find((id) => id !== user.uid); // get the ID of the other user
-            const profilePicUrl = await fetchProfilePicture(otherUserId);
-            return {
-              _id: doc.id,
-              lastMessage: data.lastMessage,
-              profilePictureUrl: profilePicUrl,
-              otherUserId,
-            };
-          })
-      );
-      setConversations(loadedConversations);
-    });
-
-    return unsubscribe;
-  }, []);
+    const fetchProfilePictures = async () => {
+      let newProfilePictures = {};
+      for (const conv of conversations) {
+        const otherUserId = conv.participants.find((id) => id !== user.uid);
+        const profilePicUrl = await fetchProfilePicture(otherUserId);
+        newProfilePictures[otherUserId] = profilePicUrl;
+      }
+      setProfilePictures(newProfilePictures);
+    };
+    fetchProfilePictures();
+  }, [conversations]);
 
   const handlePress = (otherUserId) => {
-    navigation.navigate("Chat", { userId: otherUserId });
+    navigation.navigate("Chat", {
+      screen: "ChatScreen",
+      params: { userId: otherUserId },
+    });
   };
 
   return (
@@ -67,24 +52,27 @@ export const ChatMenuScreen = () => {
       <FlatList
         data={conversations}
         keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.userContainer}
-            onPress={() => handlePress(item.otherUserId)}
-          >
-            <Image
-              source={{ uri: item.profilePictureUrl }}
-              style={styles.profileImage}
-            />
-            <Text
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={styles.lastMessage}
+        renderItem={({ item }) => {
+          const otherUserId = item.participants.find((id) => id !== user.uid);
+          return (
+            <TouchableOpacity
+              style={styles.userContainer}
+              onPress={() => handlePress(otherUserId)}
             >
-              {item.lastMessage}
-            </Text>
-          </TouchableOpacity>
-        )}
+              <Image
+                source={{ uri: profilePictures[otherUserId] }}
+                style={styles.profileImage}
+              />
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={styles.lastMessage}
+              >
+                {item.lastMessage}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
