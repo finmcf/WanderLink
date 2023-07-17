@@ -42,17 +42,17 @@ export const ChatMenuScreen = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      let newUsers = { ...users }; // cloning current users state
+      let newUsers = {};
       for (const convId of conversations) {
         const otherUserId = convId.split("_").find((id) => id !== user.uid);
         const userData = await fetchUser(otherUserId);
         const profilePictureUrl = await fetchProfilePicture(otherUserId);
         newUsers[otherUserId] = {
-          ...userData,
+          ...userData.userInformation, // Accessing the userInformation object
           profilePicture: profilePictureUrl,
         };
       }
-      setUsers(newUsers); // updating users state
+      setUsers(newUsers);
     };
     fetchUsers();
   }, [conversations]);
@@ -85,9 +85,7 @@ export const ChatMenuScreen = () => {
                 }}
                 style={styles.profileImage}
               />
-              <Text style={styles.userName}>
-                {otherUser?.name || "Loading..."}
-              </Text>
+              <Text style={styles.userName}>{otherUser?.username}</Text>
             </TouchableOpacity>
           );
         }}
