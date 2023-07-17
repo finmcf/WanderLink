@@ -66,8 +66,8 @@ const ChatScreen = () => {
           text: data.text,
           createdAt: new Date(data.timestamp),
           user: {
-            _id: user?.uid,
-            name: user?.userInformation?.username,
+            _id: data.userId,
+            name: data.userName,
           },
           image: data.image,
           video: data.video,
