@@ -78,7 +78,11 @@ export const ChatMenuScreen = () => {
               onPress={() => handlePress(otherUserId)}
             >
               <Image
-                source={{ uri: otherUser?.profilePicture }}
+                source={{
+                  uri:
+                    otherUser?.profilePicture ||
+                    "https://via.placeholder.com/150",
+                }}
                 style={styles.profileImage}
               />
               <Text style={styles.userName}>{otherUser?.name}</Text>
