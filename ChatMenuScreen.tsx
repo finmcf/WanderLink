@@ -8,36 +8,37 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { ref, getDownloadURL } from "firebase/storage";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./firebaseConfig";
 import { AppContext } from "./AppContext";
 
 export const ChatMenuScreen = () => {
   const { user, conversations } = useContext(AppContext);
-  const [profilePictures, setProfilePictures] = useState({});
+  const [users, setUsers] = useState({});
   const navigation = useNavigation();
 
-  const fetchProfilePicture = async (userId) => {
-    const profilePicRef = ref(storage, `profilePictures/${userId}.jpg`);
+  const fetchUser = async (userId) => {
+    const userRef = doc(db, `Users`, userId);
     try {
-      const url = await getDownloadURL(profilePicRef);
-      return url;
+      const userDoc = await getDoc(userRef);
+      return userDoc.data();
     } catch (error) {
-      console.log("Error fetching profile picture:", error);
+      console.log("Error fetching user:", error);
       return null;
     }
   };
 
   useEffect(() => {
-    const fetchProfilePictures = async () => {
-      let newProfilePictures = {};
-      for (const conv of conversations) {
-        const otherUserId = conv.participants.find((id) => id !== user.uid);
-        const profilePicUrl = await fetchProfilePicture(otherUserId);
-        newProfilePictures[otherUserId] = profilePicUrl;
+    const fetchUsers = async () => {
+      let newUsers = {};
+      for (const convId of conversations) {
+        const otherUserId = convId.split("_").find((id) => id !== user.uid);
+        const userData = await fetchUser(otherUserId);
+        newUsers[otherUserId] = userData;
       }
-      setProfilePictures(newProfilePictures);
+      setUsers(newUsers);
     };
-    fetchProfilePictures();
+    fetchUsers();
   }, [conversations]);
 
   const handlePress = (otherUserId) => {
@@ -51,24 +52,22 @@ export const ChatMenuScreen = () => {
     <View style={styles.container}>
       <FlatList
         data={conversations}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item}
         renderItem={({ item }) => {
-          const otherUserId = item.participants.find((id) => id !== user.uid);
+          const otherUserId = item.split("_").find((id) => id !== user.uid);
+          const otherUser = users[otherUserId];
           return (
             <TouchableOpacity
               style={styles.userContainer}
               onPress={() => handlePress(otherUserId)}
             >
-              <Image
-                source={{ uri: profilePictures[otherUserId] }}
-                style={styles.profileImage}
-              />
+              <Text style={styles.userName}>{otherUser?.name}</Text>
               <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 style={styles.lastMessage}
               >
-                {item.lastMessage}
+                {otherUser?.lastMessage}
               </Text>
             </TouchableOpacity>
           );
@@ -91,10 +90,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
   },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  userName: {
+    fontSize: 16,
     marginRight: 8,
   },
   lastMessage: {
