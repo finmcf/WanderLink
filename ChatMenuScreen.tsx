@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "./firebaseConfig";
+import { ref, getDownloadURL } from "firebase/storage";
+import { db, storage } from "./firebaseConfig";
 import { AppContext } from "./AppContext";
 
 export const ChatMenuScreen = () => {
@@ -18,12 +19,23 @@ export const ChatMenuScreen = () => {
   const navigation = useNavigation();
 
   const fetchUser = async (userId) => {
-    const userRef = doc(db, `Users`, userId);
+    const userRef = doc(db, "Users", userId);
     try {
       const userDoc = await getDoc(userRef);
       return userDoc.data();
     } catch (error) {
       console.log("Error fetching user:", error);
+      return null;
+    }
+  };
+
+  const fetchProfilePicture = async (userId) => {
+    const profilePicRef = ref(storage, `profilePictures/${userId}.jpg`);
+    try {
+      const url = await getDownloadURL(profilePicRef);
+      return url;
+    } catch (error) {
+      console.log("Error fetching profile picture:", error);
       return null;
     }
   };
@@ -34,7 +46,11 @@ export const ChatMenuScreen = () => {
       for (const convId of conversations) {
         const otherUserId = convId.split("_").find((id) => id !== user.uid);
         const userData = await fetchUser(otherUserId);
-        newUsers[otherUserId] = userData;
+        const profilePictureUrl = await fetchProfilePicture(otherUserId);
+        newUsers[otherUserId] = {
+          ...userData,
+          profilePicture: profilePictureUrl,
+        };
       }
       setUsers(newUsers);
     };
@@ -61,14 +77,11 @@ export const ChatMenuScreen = () => {
               style={styles.userContainer}
               onPress={() => handlePress(otherUserId)}
             >
+              <Image
+                source={{ uri: otherUser?.profilePicture }}
+                style={styles.profileImage}
+              />
               <Text style={styles.userName}>{otherUser?.name}</Text>
-              <Text
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={styles.lastMessage}
-              >
-                {otherUser?.lastMessage}
-              </Text>
             </TouchableOpacity>
           );
         }}
@@ -90,12 +103,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "lightgray",
   },
-  userName: {
-    fontSize: 16,
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     marginRight: 8,
   },
-  lastMessage: {
-    flex: 1,
-    fontSize: 18,
+  userName: {
+    fontSize: 16,
   },
 });
