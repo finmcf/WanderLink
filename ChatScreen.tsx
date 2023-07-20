@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Button, Platform } from "react-native";
+import { Button, Platform, View } from "react-native";
 import { GiftedChat } from "react-native-gifted-chat";
 import { useRoute } from "@react-navigation/native";
 import { db, storage } from "./firebaseConfig";
@@ -184,12 +184,40 @@ const ChatScreen = () => {
     }
   };
 
+  const pickVideo = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      const newMessage = {
+        _id: Math.random().toString(),
+        text: "",
+        createdAt: new Date(),
+        user: {
+          _id: user?.uid,
+          name: user?.displayName,
+        },
+        video: result.uri,
+      };
+
+      await onSend([newMessage]);
+    }
+  };
+
   return (
     <GiftedChat
       messages={messages}
       onSend={(newMessages) => onSend(newMessages)}
       user={{ _id: user?.uid }}
-      renderActions={() => <Button title="Pick Image" onPress={pickImage} />}
+      renderActions={() => (
+        <View>
+          <Button title="Pick Image" onPress={pickImage} />
+          <Button title="Pick Video" onPress={pickVideo} />
+        </View>
+      )}
     />
   );
 };
